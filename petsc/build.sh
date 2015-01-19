@@ -7,6 +7,8 @@ ConfigureStep() {
 
   #printenv
 
+  export PETSC_DIR=${SRC_DIR}
+
   #echo "CC=${NACLCC}"
   #echo "CFLAGS=${NACLPORTS_CFLAGS}"
   #echo "CXX=${NACLCXX}"
@@ -31,6 +33,8 @@ ConfigureStep() {
   #./configure --with-mpi=0 CC=${NACLCC} CFLAGS="${NACLPORTS_CFLAGS}" CXX=${NACLCXX} CXXFLAGS="${NACLPORTS_CXXFLAGS}" CPPFLAGS="${NACLPORTS_CPPFLAGS}" LDFLAGS="${NACLPORTS_LDFLAGS}" AR=${NACLAR}
 #  ./configure --with-mpi=0 --CC=${CC} --CFLAGS="${CFLAGS}" --CXX=${CXX} --CXXFLAGS="${CXXFLAGS}" --CPPFLAGS="${CPPFLAGS}" --LDFLAGS="${LDFLAGS}" --AR=${AR}
   ./configure --with-mpi=0 --download-f2cblaslapack=1 --with-cc=${CC} --CFLAGS="${CFLAGS}" --with-cxx=${CXX} --CXXFLAGS="${CXXFLAGS}" --CPPFLAGS="${CPPFLAGS}" --LDFLAGS="${LDFLAGS}" --with-ar=${AR}
+
+  # --with-blas-lapack-dir=
   # --with-fortran=0
 
   #./configure --with-mpi=0 LDFLAGS="1 3"

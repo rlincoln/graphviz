@@ -1,0 +1,7 @@
+*
+
+!.gitignore
+!petsc
+!f2cblaslapack
+
+!*/
