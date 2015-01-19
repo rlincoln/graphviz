@@ -1,0 +1,34 @@
+diff --git a/make.inc b/make.inc
+index 2ffd9f4..d645fbb 100644
+--- a/make.inc
++++ b/make.inc
+@@ -21,14 +21,14 @@ PLAT = _linux
+ #
+ #  The name of the libraries to be created/linked to
+ #
+-SuperLUroot	= $(HOME)/Codes/SuperLU/SuperLU_4.3
++SuperLUroot	= $(SUPERLU_ROOT)
+ SUPERLULIB   	= $(SuperLUroot)/lib/libsuperlu_4.3.a
+ TMGLIB       	= libtmglib.a
+ 
+ ## BLASLIB   	= $(SuperLUroot)/lib/libblas.a
+ 
+ BLASDEF 	= -DUSE_VENDOR_BLAS
+-BLASLIB 	= -L$(HOME)/lib/GotoBLAS -lgoto
++BLASLIB 	= $(BLAS_LIB)
+ 
+ ## ATLAS BLAS causes single-precision to fail
+ #BLASLIB   	= -L/usr/lib/atlas -lblas
+@@ -41,11 +41,9 @@ LIBS		= $(SUPERLULIB) $(BLASLIB)
+ #  The archiver and the flag(s) to use when building archive (library)
+ #  If your system has no ranlib, set RANLIB = echo.
+ #
+-ARCH         = ar
++ARCH         = $(AR)
+ ARCHFLAGS    = cr
+-RANLIB       = ranlib
+ 
+-CC           = gcc
+ CFLAGS       = -DPRNTlevel=0 -O3
+ NOOPTS       = 
+ FORTRAN	     = g77

@@ -1,0 +1,7 @@
+NAME=superlu
+VERSION=4.3
+URL=http://crd-legacy.lbl.gov/~xiaoye/SuperLU/superlu_4.3.tar.gz
+LICENSE=BSD
+ARCHIVE_ROOT=SuperLU_4.3
+DEPENDS=(f2cblaslapack)
+SHA1=d2863610d8c545d250ffd020b8e74dc667d7cbdd
