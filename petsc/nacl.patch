@@ -144,3 +144,16 @@ index 86e61b3..db3b6d2 100755
  if not type(sys.version_info) is tuple and sys.version_info.major > 2:
    print('Configure does not support Python 3 yet, please run as')
    print('  python2 ' + ' '.join(["'" + a + "'" for a in sys.argv]))
+diff --git a/src/sys/fileio/mprint.c b/src/sys/fileio/mprint.c
+index eeefd3c..5052a9e 100644
+--- a/src/sys/fileio/mprint.c
++++ b/src/sys/fileio/mprint.c
+@@ -127,7 +127,7 @@ PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *f
+ #elif defined(PETSC_HAVE__VSNPRINTF)
+   fullLengthInt = _vsnprintf(str,len,newformat,Argp);
+ #else
+-#error "vsnprintf not found"
++  fullLengthInt = vsnprintf(str,len,newformat,Argp);
+ #endif
+   if (fullLengthInt < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"vsnprintf() failed");
+   if (fullLength) *fullLength = (size_t)fullLengthInt;

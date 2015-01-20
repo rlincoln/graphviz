@@ -30,9 +30,17 @@ ConfigureStep() {
 
   SetupCrossEnvironment
 
+  #CFLAGS+=" -std=gnu++11 -stdlib=libc++"
+  #CFLAGS+=" -std=c++11"
+  #echo "CFLAGS=${CFLAGS}"
+
   #./configure --with-mpi=0 CC=${NACLCC} CFLAGS="${NACLPORTS_CFLAGS}" CXX=${NACLCXX} CXXFLAGS="${NACLPORTS_CXXFLAGS}" CPPFLAGS="${NACLPORTS_CPPFLAGS}" LDFLAGS="${NACLPORTS_LDFLAGS}" AR=${NACLAR}
 #  ./configure --with-mpi=0 --CC=${CC} --CFLAGS="${CFLAGS}" --CXX=${CXX} --CXXFLAGS="${CXXFLAGS}" --CPPFLAGS="${CPPFLAGS}" --LDFLAGS="${LDFLAGS}" --AR=${AR}
-  ./configure --with-mpi=0 --download-f2cblaslapack=1 --with-cc=${CC} --CFLAGS="${CFLAGS}" --with-cxx=${CXX} --CXXFLAGS="${CXXFLAGS}" --CPPFLAGS="${CPPFLAGS}" --LDFLAGS="${LDFLAGS}" --with-ar=${AR}
+  #./configure --with-mpi=0 --download-f2cblaslapack=1 --with-cc=${CC} --CFLAGS="${CFLAGS}" --with-cxx=${CXX} --CXXFLAGS="${CXXFLAGS}" --CPPFLAGS="${CPPFLAGS}" --LDFLAGS="${LDFLAGS}" --with-ar=${AR}
+  ./configure --with-mpi=0 --with-blas-lapack-dir=/tmp --with-shared-libraries=1 --with-cc=${CC} --CFLAGS="${CFLAGS}" --with-cxx=${CXX} --CXXFLAGS="${CXXFLAGS}" --CPPFLAGS="${CPPFLAGS}" --LDFLAGS="${LDFLAGS}" --with-ar=${AR}
+
+#--with-blas-lapack-lib=[/tmp/liblapack.a,/tmp/libblas.a]
+#--with-shared-libraries=1
 
   # --with-blas-lapack-dir=
   # --with-fortran=0
@@ -63,16 +71,16 @@ BuildStep() {
   if [ "${VERBOSE:-}" = "1" ]; then
     MAKE_TARGETS+=" VERBOSE=1 V=1"
   fi
-  LogExecute make ${MAKE_TARGETS:-}
+  LogExecute make PETSC_DIR=${SRC_DIR} PETSC_ARCH=arch-linux2-c-debug all
 }
 
 InstallStep() {
   echo "INSTALL"
-  DefaultInstallStep
+  #DefaultInstallStep
 }
 
 TestStep() {
-  echo "TEST"
-  DefaultTestStep
+  cd ${SRC_DIR}
+  make PETSC_DIR=${SRC_DIR} PETSC_ARCH=arch-linux2-c-debug test
 }
 
