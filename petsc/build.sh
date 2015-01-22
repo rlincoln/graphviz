@@ -9,13 +9,22 @@ ConfigureStep() {
 
   export PETSC_DIR=${SRC_DIR}
 
-  #echo "CC=${NACLCC}"
-  #echo "CFLAGS=${NACLPORTS_CFLAGS}"
-  #echo "CXX=${NACLCXX}"
-  #echo "CXXFLAGS=${NACLPORTS_CXXFLAGS}"
-  #echo "CPPFLAGS=${NACLPORTS_CPPFLAGS}"
-  #echo "LDFLAGS=${NACLPORTS_LDFLAGS}"
-  #echo "AR=${NACLAR}"
+  # pnacl arch variables
+  if [ "${NACL_ARCH}" = "pnacl" ]; then
+    export NACL_TRANSLATOR=${TRANSLATOR}
+    export PNACL_FINALIZE=${PNACLFINALIZE}
+    export HOST_ARCH=x86_64
+  fi
+
+  echo "CC=${NACLCC}"
+  echo "CFLAGS=${NACLPORTS_CFLAGS}"
+  echo "CXX=${NACLCXX}"
+  echo "CXXFLAGS=${NACLPORTS_CXXFLAGS}"
+  echo "CPPFLAGS=${NACLPORTS_CPPFLAGS}"
+  echo "LDFLAGS=${NACLPORTS_LDFLAGS}"
+  echo "AR=${NACLAR}"
+
+  #echo "PREFIX=${PREFIX}"
 
   #export EXTRA_CONFIGURE_ARGS="--with-mpi=0 CC=${NACLCC} CFLAGS=\"${NACLPORTS_CFLAGS}\" CXX=${NACLCXX} CXXFLAGS=\"${NACLPORTS_CXXFLAGS}\" CPPFLAGS=\"${NACLPORTS_CPPFLAGS}\" LDFLAGS=\"${NACLPORTS_LDFLAGS}\" AR=${NACLAR}"
   #export EXTRA_CONFIGURE_ARGS=--with-mpi=0 LDFLAGS="1 3"
@@ -37,7 +46,8 @@ ConfigureStep() {
   #./configure --with-mpi=0 CC=${NACLCC} CFLAGS="${NACLPORTS_CFLAGS}" CXX=${NACLCXX} CXXFLAGS="${NACLPORTS_CXXFLAGS}" CPPFLAGS="${NACLPORTS_CPPFLAGS}" LDFLAGS="${NACLPORTS_LDFLAGS}" AR=${NACLAR}
 #  ./configure --with-mpi=0 --CC=${CC} --CFLAGS="${CFLAGS}" --CXX=${CXX} --CXXFLAGS="${CXXFLAGS}" --CPPFLAGS="${CPPFLAGS}" --LDFLAGS="${LDFLAGS}" --AR=${AR}
   #./configure --with-mpi=0 --download-f2cblaslapack=1 --with-cc=${CC} --CFLAGS="${CFLAGS}" --with-cxx=${CXX} --CXXFLAGS="${CXXFLAGS}" --CPPFLAGS="${CPPFLAGS}" --LDFLAGS="${LDFLAGS}" --with-ar=${AR}
-  ./configure --with-mpi=0 --with-blas-lapack-dir=/tmp --with-shared-libraries=1 --with-cc=${CC} --CFLAGS="${CFLAGS}" --with-cxx=${CXX} --CXXFLAGS="${CXXFLAGS}" --CPPFLAGS="${CPPFLAGS}" --LDFLAGS="${LDFLAGS}" --with-ar=${AR}
+  #./configure --prefix=/usr --with-mpi=0 --with-blas-lapack-dir=/tmp/pnaclblas --with-cc=${CC} --CFLAGS="${CFLAGS}" --with-cxx=${CXX} --CXXFLAGS="${CXXFLAGS}" --CPPFLAGS="${CPPFLAGS}" --LDFLAGS="${LDFLAGS}" --with-ar=${AR}
+  ./configure --prefix=/usr --with-mpi=0 --with-blas-lapack-dir=${NACLPORTS_LIBDIR} --with-cc=${CC} --CFLAGS="${CFLAGS}" --with-cxx=${CXX} --CXXFLAGS="${CXXFLAGS}" --CPPFLAGS="${CPPFLAGS}" --LDFLAGS="${LDFLAGS}" --with-ar=${AR}
 
 #--with-blas-lapack-lib=[/tmp/liblapack.a,/tmp/libblas.a]
 #--with-shared-libraries=1
@@ -74,13 +84,18 @@ BuildStep() {
   LogExecute make PETSC_DIR=${SRC_DIR} PETSC_ARCH=arch-linux2-c-debug all
 }
 
-InstallStep() {
-  echo "INSTALL"
-  #DefaultInstallStep
-}
-
 TestStep() {
   cd ${SRC_DIR}
-  make PETSC_DIR=${SRC_DIR} PETSC_ARCH=arch-linux2-c-debug test
+  #make PETSC_DIR=${SRC_DIR} PETSC_ARCH=arch-linux2-c-debug test
+}
+
+InstallStep() {
+  echo "INSTALL"
+  cp ${SRC_DIR}/include/mpiuni/mpi.h ${SRC_DIR}/include/mpi.h
+
+  cd ${SRC_DIR}
+  DESTDIR=${DESTDIR}/${PREFIX}
+  #DESTDIR_PETSC=${DESTDIR}/${PREFIX}/petsc
+  DefaultInstallStep
 }
 
