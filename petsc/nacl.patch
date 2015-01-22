@@ -1,5 +1,5 @@
 diff --git a/config/BuildSystem/config/base.py b/config/BuildSystem/config/base.py
-index 2eec525..b38d998 100644
+index 2eec525..e96b01e 100644
 --- a/config/BuildSystem/config/base.py
 +++ b/config/BuildSystem/config/base.py
 @@ -398,12 +398,13 @@ class Configure(script.Script):
@@ -51,7 +51,7 @@ index 2eec525..b38d998 100644
  
      linkerObj = self.linkerObj
      def report(command, status, output, error):
-@@ -600,7 +609,9 @@ class Configure(script.Script):
+@@ -600,7 +609,25 @@ class Configure(script.Script):
      output  = ''
      error   = ''
      status  = 1
@@ -59,6 +59,22 @@ index 2eec525..b38d998 100644
 +#    self.framework.log.write('Executing : '+command+'\n')
 +#    import sys
 +#    sys.exit(0)
++    self.framework.log.write('ARCH : '+os.environ['NACL_ARCH']+'\n')
++    if os.environ['NACL_ARCH'] == "pnacl":
++      pexe = self.linkerObj
++      pexe_final = pexe+'.pexe'
++      nexe = pexe+'.nexe'
++
++      self.framework.log.write('\nPNACL_FINALIZE : '+str(os.environ.get('PNACL_FINALIZE'))+'\n\n')   
++      f = os.environ['PNACL_FINALIZE']+' '+pexe+" -o "+pexe_final
++      self.framework.log.write(f+'\n\n')
++      Configure.executeShellCommand(f, log = self.framework.log)
++
++      c = os.environ['NACL_TRANSLATOR'] + ' -arch '+os.environ['HOST_ARCH']+' '+pexe_final+' -o '+nexe# + ' --allow-llvm-bitcode-input'
++      self.framework.log.write('\nNACL_TRANSLATOR : '+str(os.environ.get('NACL_TRANSLATOR'))+'\n\n')      
++      self.framework.log.write(c+'\n\n')
++      Configure.executeShellCommand(c, log = self.framework.log)
++      command = executor+' '+nexe if executor else nexe
      try:
        (output, error, status) = Configure.executeShellCommand(command, log = self.framework.log)
      except RuntimeError, e:
@@ -144,6 +160,19 @@ index 86e61b3..db3b6d2 100755
  if not type(sys.version_info) is tuple and sys.version_info.major > 2:
    print('Configure does not support Python 3 yet, please run as')
    print('  python2 ' + ' '.join(["'" + a + "'" for a in sys.argv]))
+diff --git a/makefile b/makefile
+index c4405b3..964811e 100644
+--- a/makefile
++++ b/makefile
+@@ -162,7 +162,7 @@ test_build:
+           if test -s .ftn-dtype.log; then F90TEST="testex5f90t"; else F90TEST="testex5f"; fi; ${RM} .ftn-dtype.log; \
+           cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} $${F90TEST}; \
+          fi;
+-	@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
++	#@cd src/snes/examples/tutorials >/dev/null; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
+ 	-@echo "Completed test examples"
+ testx_build:
+ 	-@echo "Running graphics test example to verify correct X11 installation"
 diff --git a/src/sys/fileio/mprint.c b/src/sys/fileio/mprint.c
 index eeefd3c..5052a9e 100644
 --- a/src/sys/fileio/mprint.c
