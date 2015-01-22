@@ -15,6 +15,7 @@ BuildStep() {
   export COPTFLAGS=-O
   export CNOOPT=-O0
   export AR_FLAGS=cr
+  #-Wshift-op-parentheses -Wlogical-op-parentheses
 
   export MAKE_OPTIONS=CC="${CC}" COPTFLAGS="${COPTFLAGS}" CNOOPT="${CNOOPT}" AR="${AR}" AR_FLAGS="${AR_FLAGS}" RM="/bin/rm"
 
@@ -38,7 +39,7 @@ TestStep() {
 }
 
 InstallStep() {
-  echo "installing"
-  #cp ${SRC_DIR}/${BLAS_LIB_NAME} ${DESTDIR}
-  #cp ${SRC_DIR}/${LAPACK_LIB_NAME} ${DESTDIR}
+  MakeDir ${DESTDIR_LIB}
+  LogExecute install ${SRC_DIR}/${BLAS_LIB_NAME} ${DESTDIR_LIB}/
+  LogExecute install ${SRC_DIR}/${LAPACK_LIB_NAME} ${DESTDIR_LIB}/
 }
