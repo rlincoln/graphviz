@@ -1,5 +1,63 @@
+diff --git a/INSTALL/superlu_timer.c b/INSTALL/superlu_timer.c
+index 6ba07bf..9f79547 100644
+--- a/INSTALL/superlu_timer.c
++++ b/INSTALL/superlu_timer.c
+@@ -11,6 +11,7 @@
+  *       compilation to choose the appropriate function.
+  * </pre>
+  */
++#define NO_TIMER
+ 
+ 
+ #ifdef SUN 
+@@ -56,6 +57,7 @@ double SuperLU_timer_()
+     /* no sys/times.h on WIN32 */
+     double tmp;
+     tmp = 0.0;
++    int clocks_per_sec = CLK_TCK;
+ #else
+     struct tms use;
+     double tmp;
+diff --git a/Makefile b/Makefile
+index d8d822c..fe7bc5d 100644
+--- a/Makefile
++++ b/Makefile
+@@ -18,16 +18,16 @@
+ 
+ include make.inc
+ 
+-all: install lib testing
++all: install lib
+ 
+ lib: superlulib tmglib
+ 
+ clean: cleanlib cleantesting
+ 
+ install:
+-	( cd INSTALL; $(MAKE) )
+-#	( cd INSTALL; cp lsame.c ../SRC/; \
+-#	  cp dlamch.c ../SRC/; cp slamch.c ../SRC/ )
++#	( cd INSTALL; $(MAKE) )
++	( cd INSTALL; cp lsame.c ../SRC/; \
++	  cp dlamch.c ../SRC/; cp slamch.c ../SRC/ )
+ 
+ blaslib:
+ 	( cd CBLAS; $(MAKE) )
+diff --git a/SRC/superlu_timer.c b/SRC/superlu_timer.c
+index e888f08..783212d 100644
+--- a/SRC/superlu_timer.c
++++ b/SRC/superlu_timer.c
+@@ -11,7 +11,7 @@
+  *       compilation to choose the appropriate function.
+  * </pre>
+  */
+-
++#define NO_TIMER
+ 
+ #ifdef SUN 
+ /*
 diff --git a/make.inc b/make.inc
-index 2ffd9f4..d645fbb 100644
+index 2ffd9f4..f78e1b8 100644
 --- a/make.inc
 +++ b/make.inc
 @@ -21,14 +21,14 @@ PLAT = _linux
@@ -7,8 +65,9 @@ index 2ffd9f4..d645fbb 100644
  #  The name of the libraries to be created/linked to
  #
 -SuperLUroot	= $(HOME)/Codes/SuperLU/SuperLU_4.3
+-SUPERLULIB   	= $(SuperLUroot)/lib/libsuperlu_4.3.a
 +SuperLUroot	= $(SUPERLU_ROOT)
- SUPERLULIB   	= $(SuperLUroot)/lib/libsuperlu_4.3.a
++SUPERLULIB   	= $(SuperLUroot)/SRC/libsuperlu_4.3.a
  TMGLIB       	= libtmglib.a
  
  ## BLASLIB   	= $(SuperLUroot)/lib/libblas.a
@@ -19,7 +78,7 @@ index 2ffd9f4..d645fbb 100644
  
  ## ATLAS BLAS causes single-precision to fail
  #BLASLIB   	= -L/usr/lib/atlas -lblas
-@@ -41,11 +41,9 @@ LIBS		= $(SUPERLULIB) $(BLASLIB)
+@@ -41,12 +41,10 @@ LIBS		= $(SUPERLULIB) $(BLASLIB)
  #  The archiver and the flag(s) to use when building archive (library)
  #  If your system has no ranlib, set RANLIB = echo.
  #
@@ -29,6 +88,8 @@ index 2ffd9f4..d645fbb 100644
 -RANLIB       = ranlib
  
 -CC           = gcc
- CFLAGS       = -DPRNTlevel=0 -O3
+-CFLAGS       = -DPRNTlevel=0 -O3
++CFLAGS       = -DPRNTlevel=0 -O3 $(C_FLAGS)
  NOOPTS       = 
  FORTRAN	     = g77
+ FFLAGS       = -O2
