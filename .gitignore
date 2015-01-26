@@ -4,5 +4,6 @@
 !petsc/*
 !f2cblaslapack/*
 !superlu/*
+!suitesparse/*
 
 !*/

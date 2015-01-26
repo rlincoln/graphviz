@@ -1,0 +1,7 @@
+NAME=suitesparse
+VERSION=4.4.3
+URL=http://faculty.cse.tamu.edu/davis/SuiteSparse/SuiteSparse-4.4.3.tar.gz
+LICENSE=BSD
+ARCHIVE_ROOT=SuiteSparse
+DEPENDS=(f2cblaslapack)
+SHA1=3a583ca4c09c6e9d7c574d313ad93e514478bb29
