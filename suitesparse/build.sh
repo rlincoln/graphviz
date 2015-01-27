@@ -11,7 +11,7 @@ BuildStep() {
   #export RANLIB=${NACLRANLIB}
 
   cd ${SRC_DIR}
-  export OS_JOBS=1
+#  export OS_JOBS=1
   export BLAS_LIB="-lf2cblas"
   export LAPACK_LIB="-lf2clapack"
   #export CFLAGS="-Wno-unused-result -Wno-parentheses"
