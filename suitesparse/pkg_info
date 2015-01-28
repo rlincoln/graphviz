@@ -1,7 +1,7 @@
 NAME=suitesparse
 VERSION=4.4.3
 URL=http://faculty.cse.tamu.edu/davis/SuiteSparse/SuiteSparse-4.4.3.tar.gz
-LICENSE=LGPL
+LICENSE=GPL,LGPL
 ARCHIVE_ROOT=SuiteSparse
 DEPENDS=(f2cblaslapack)
 CONFLICTS=(superlu)
