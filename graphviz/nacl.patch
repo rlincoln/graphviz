@@ -1,0 +1,88 @@
+diff --git a/configure b/configure
+index 651eaf8..9c134ec 100755
+--- a/configure
++++ b/configure
+@@ -6942,7 +6942,8 @@ irix5* | irix6* | nonstopux*)
+   ;;
+ 
+ # This must be glibc/ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu)
++# Patched by naclports using patch_configure.py
++linux* | k*bsd*-gnu | kopensolaris*-gnu | nacl*)
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
+@@ -12353,6 +12354,18 @@ uts4*)
+   shlibpath_var=LD_LIBRARY_PATH
+   ;;
+ 
++nacl)
++  # Patched by naclports using patch_configure.py
++  if libc_so=`$CC -print-file-name=libc.so` && [ "$libc_so" != libc.so ]; then
++    dynamic_linker="GNU/NaCl ld.so"
++    version_type=linux
++    library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}${major} ${libname}${shared_ext}'
++    soname_spec='${libname}${release}${shared_ext}$major'
++  else
++    dynamic_linker=no
++  fi
++  ;;
++
+ *)
+   dynamic_linker=no
+   ;;
+@@ -17155,6 +17168,18 @@ uts4*)
+   shlibpath_var=LD_LIBRARY_PATH
+   ;;
+ 
++nacl)
++  # Patched by naclports using patch_configure.py
++  if libc_so=`$CC -print-file-name=libc.so` && [ "$libc_so" != libc.so ]; then
++    dynamic_linker="GNU/NaCl ld.so"
++    version_type=linux
++    library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}${major} ${libname}${shared_ext}'
++    soname_spec='${libname}${release}${shared_ext}$major'
++  else
++    dynamic_linker=no
++  fi
++  ;;
++
+ *)
+   dynamic_linker=no
+   ;;
+diff --git a/lib/gvc/gvusershape.c b/lib/gvc/gvusershape.c
+index 7869a26..1998c22 100644
+--- a/lib/gvc/gvusershape.c
++++ b/lib/gvc/gvusershape.c
+@@ -21,6 +21,8 @@
+ #include <ctype.h>
+ #include <errno.h>
+ 
++#include "types.h"
++
+ #ifdef WIN32
+ #include <windows.h>
+ #define GLOB_NOSPACE    1   /* Ran out of memory.  */
+@@ -33,7 +35,6 @@
+ #include <regex.h>
+ #endif
+ 
+-#include "types.h"
+ #include "logic.h"
+ #include "memory.h"
+ #include "agxbuf.h"
+diff --git a/lib/gvpr/Makefile.in b/lib/gvpr/Makefile.in
+index 8e22f31..1785017 100644
+--- a/lib/gvpr/Makefile.in
++++ b/lib/gvpr/Makefile.in
+@@ -1065,7 +1065,9 @@ gvpr.3.pdf: $(srcdir)/gvpr.3
+ 	- @GROFF@ -Tps -man $(srcdir)/gvpr.3 | @PS2PDF@ - - >gvpr.3.pdf
+ 
+ gdefs.h: $(top_srcdir)/lib/gvpr/gprdata mkdefs
+-	./mkdefs gdefs.h < $(top_srcdir)/lib/gvpr/gprdata
++	$(PNACLFINALIZE) ./mkdefs
++	$(TRANSLATOR) ./mkdefs -arch $(HOST_ARCH) -o mkdefs.nexe
++	$(NACL_SEL_LDR_X8664) -a -B  $(NACL_IRT_X8664) -- ./mkdefs.nexe gdefs.h < $(top_srcdir)/lib/gvpr/gprdata
+ 
+ # Tell versions [3.59,3.63) of GNU make to not export all variables.
+ # Otherwise a system limit (for SysV at least) may be exceeded.
