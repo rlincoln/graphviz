@@ -9,6 +9,9 @@ ConfigureStep() {
 
 #  EXTRA_CONFIGURE_ARGS+=--enable-static 
   DefaultConfigureStep
+
+#  SetupCrossEnvironment
+#  ./configure --prefix=/usr
 }
 
 BuildStep() {
@@ -18,7 +21,7 @@ BuildStep() {
   #export RANLIB=${NACLRANLIB}
 
   cd ${SRC_DIR}
-  export OS_JOBS=1
+#  export OS_JOBS=1
   #export CFLAGS="-Wno-unused-result -Wno-parentheses"
   #export BUILD_DIR
   
@@ -32,6 +35,11 @@ BuildStep() {
   DefaultBuildStep
   #SetupCrossEnvironment
 }
+
+#PostBuildStep() {
+#  find . -type f -print0 | xargs -0 sed -i 's/${PREFIX}//usr/g'
+#  DefaultPostBuildStep
+#}
 
 TestStep() {
 #echo "Skipping tests"
@@ -53,12 +61,20 @@ InstallStep() {
   #export ${DESTDIR_INCLUDE}
 
   DefaultInstallStep
+
+  cd ${DESTDIR}
+  find . -type f -print0 -name '*.pc' -o -name '*.la' | xargs -0 sed -i "s|${PREFIX}|/usr|g"
 }
 
 PostInstallTestStep() {
-  cd ${SRC_DIR}/cmd/dot/
-  export GVBINDIR=${DESTDIR_LIB}
-  RunSelLdrCommand dot.pexe -c
+  DefaultPostInstallTestStep
+#  LogExecute cd ${SRC_DIR}/cmd/dot/
+#  LogExecute export GVBINDIR=${DESTDIR_LIB}/graphviz
+#  LogExecute ls ${GVBINDIR}
+#  RunSelLdrCommand dot_static.pexe -c -v
+#  LogExecute sed -i.bak "s|-a -B|-E GVBINDIR=${GVBINDIR} -a -B|g" dot_static.pexe_64.sh
+#  LogExecute ./dot_static.pexe_64.sh -c -v
+
 
 #  local PEXE=dot.pexe
 #  local NEXE_64=dot_64.nexe
