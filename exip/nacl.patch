@@ -1,0 +1,20 @@
+diff --git a/build/gcc/Makefile b/build/gcc/Makefile
+index 35fd191..1b616ac 100644
+--- a/build/gcc/Makefile
++++ b/build/gcc/Makefile
+@@ -20,7 +20,7 @@ TARGET ?= pc
+ 
+ params ?= $(TARGET)/build-params.mk
+ 
+-include $(params)
++#include $(params)
+ 
+ CC = $(COMPILER)
+ 
+@@ -249,4 +249,4 @@ test_sets_copy_examples:
+ 		cp $(PROJECT_ROOT)/examples/simpleDecoding/exipd-test-schema.exi $(EXAMPLES_BIN_DIR)/exipd-test-schema.exi
+ 		
+ test_sets_copy_utils:		
+-		cp $(PROJECT_ROOT)/utils/schemaHandling/EXIOptions-xsd.exi $(UTILS_BIN_DIR)/EXIOptions-xsd.exi	
+\ No newline at end of file
++		cp $(PROJECT_ROOT)/utils/schemaHandling/EXIOptions-xsd.exi $(UTILS_BIN_DIR)/EXIOptions-xsd.exi	

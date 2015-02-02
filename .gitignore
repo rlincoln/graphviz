@@ -6,5 +6,7 @@
 !superlu/*
 !suitesparse/*
 !graphviz/*
+!exip/*
+!check/*
 
 !*/
