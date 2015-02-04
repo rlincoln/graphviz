@@ -47,7 +47,7 @@ ConfigureStep() {
 #  ./configure --with-mpi=0 --CC=${CC} --CFLAGS="${CFLAGS}" --CXX=${CXX} --CXXFLAGS="${CXXFLAGS}" --CPPFLAGS="${CPPFLAGS}" --LDFLAGS="${LDFLAGS}" --AR=${AR}
   #./configure --with-mpi=0 --download-f2cblaslapack=1 --with-cc=${CC} --CFLAGS="${CFLAGS}" --with-cxx=${CXX} --CXXFLAGS="${CXXFLAGS}" --CPPFLAGS="${CPPFLAGS}" --LDFLAGS="${LDFLAGS}" --with-ar=${AR}
   #./configure --prefix=/usr --with-mpi=0 --with-blas-lapack-dir=/tmp/pnaclblas --with-cc=${CC} --CFLAGS="${CFLAGS}" --with-cxx=${CXX} --CXXFLAGS="${CXXFLAGS}" --CPPFLAGS="${CPPFLAGS}" --LDFLAGS="${LDFLAGS}" --with-ar=${AR}
-  ./configure --prefix=/usr --with-mpi=0 --with-blas-lapack-dir=${NACLPORTS_LIBDIR} --with-cc=${CC} --CFLAGS="${CFLAGS}" --with-cxx=${CXX} --CXXFLAGS="${CXXFLAGS}" --CPPFLAGS="${CPPFLAGS}" --LDFLAGS="${LDFLAGS}" --with-ar=${AR}
+  ./configure --with-fc=0 --prefix=/usr --with-mpi=0 --with-blas-lapack-dir=${NACLPORTS_LIBDIR} --with-cc=${CC} --CFLAGS="${CFLAGS}" --with-cxx=${CXX} --CXXFLAGS="${CXXFLAGS}" --CPPFLAGS="${CPPFLAGS}" --LDFLAGS="${LDFLAGS}" --with-ar=${AR}
 
 #--with-blas-lapack-lib=[/tmp/liblapack.a,/tmp/libblas.a]
 #--with-shared-libraries=1
@@ -98,4 +98,3 @@ InstallStep() {
   #DESTDIR_PETSC=${DESTDIR}/${PREFIX}/petsc
   DefaultInstallStep
 }
-
