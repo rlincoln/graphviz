@@ -8,5 +8,6 @@
 !graphviz/*
 !exip/*
 !check/*
+!ppapi_common/**
 
 !*/
