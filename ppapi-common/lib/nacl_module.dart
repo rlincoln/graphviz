@@ -4,6 +4,18 @@ import 'dart:async';
 import 'dart:html';
 import 'dart:js' show context, JsObject;
 
+enum ModuleStatus {
+  /// NaCl module not loaded.
+  NO_STATUS,
+  LOADING,
+  RUNNING,
+  /// NaCl module failed to load.
+  ERROR,
+  /// Browser can not communicate with module.
+  EXITED,
+  CRASHED
+}
+
 abstract class NaClModule {
   String name = 'nacl_module';
   String id = 'nacl_module';
@@ -13,11 +25,14 @@ abstract class NaClModule {
   num width = 0, height = 0;
   
   Element _wrapper;
-  var jsModule = null;
+  JsObject _jsModule = null;
   
-  Completer _completer;
+  Completer _loadCompleter;
   bool _loaded = false;
   bool get loaded => _loaded;
+  
+  ModuleStatus _status = ModuleStatus.NO_STATUS;
+  ModuleStatus get status => _status;    
   
   NaClModule(this._wrapper, String packagePath, String manifestName) {
     if (_wrapper == null) {
@@ -28,29 +43,57 @@ abstract class NaClModule {
     
     _wrapper.addEventListener('load', onLoad, true);
     _wrapper.addEventListener('message', onMessage, true);  
+    _wrapper.addEventListener('error', _onError, true);
+    _wrapper.addEventListener('crash', _onCrash, true);
   }
   
   Future loadModule() {
-    _completer = new Completer();
-    var moduleEl = _createNaClModule();    
+    var moduleEl = _createNaClModule();
+    _loadCompleter = new Completer();
+    _status = ModuleStatus.LOADING;
     _wrapper.append(moduleEl);
-    return _completer.future;
+    return _loadCompleter.future;
   }
   
   void onLoad(Event event) {
+    _status = ModuleStatus.RUNNING;
     var jsDoc = new JsObject.fromBrowserObject(context["document"]);
-    jsModule = new JsObject.fromBrowserObject(jsDoc.callMethod("getElementById", [id]));
+    _jsModule = new JsObject.fromBrowserObject(jsDoc.callMethod("getElementById", [id]));
     _loaded = true;
-    if (_completer != null) {
-      _completer.complete(_loaded);
-      _completer = null;
+    if (_loadCompleter != null) {
+      _loadCompleter.complete(_loaded);
+      _loadCompleter = null;
     }
   }
   
   void onMessage(Event event);
+
+  /// Called when the NaCl module fails to load.
+  void _onError(event) {
+    _status = ModuleStatus.ERROR;
+    if (_loadCompleter != null) {
+      _loadCompleter.completeError(event);
+      _loadCompleter = null;
+    }
+  }
+
+  /// Called when the browser can not communicate with the module.
+  _onCrash(event) {
+    if (_jsModule['exitStatus'] == -1) {
+      _status = ModuleStatus.CRASHED;
+    } else {
+      _status = ModuleStatus.EXITED;
+    }
+    if (_loadCompleter != null) {
+      _loadCompleter.completeError(event);
+      _loadCompleter = null;
+    }
+  }
+  
+  int get exitStatus => _jsModule['exitStatus'];
   
   void postMessage(message) {
-    if (jsModule == null) {
+    if (_jsModule == null) {
       return;
     }
     if (message is Map || message is Iterable) {
@@ -58,7 +101,7 @@ abstract class NaClModule {
     } else if (message is! String && message is! num) {
       throw new ArgumentError.value(message, 'message', "unsupported message type");
     }
-    jsModule.callMethod("postMessage", [message]);
+    _jsModule.callMethod("postMessage", [message]);
   }
     
   Element _createNaClModule() {

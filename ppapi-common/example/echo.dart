@@ -28,10 +28,30 @@ void submitForm(Event e) {
   TextInputElement messageInput = querySelector('#messageInput');
   
   if (!module.loaded) {
+    updateStatus("LOADING");
     module.loadModule().then((_) {
+      updateStatus("RUNNING");
       module.postMessage(messageInput.value);
+    }, onError: (_) {
+      if (module.status == ModuleStatus.EXITED) {
+        updateStatus('EXITED [${module.exitStatus}]');
+      } else {
+        updateStatus('CRASHED');        
+      }
     });
   } else {
     module.postMessage(messageInput.value);
+  }
+}
+
+var statusText = 'NO-STATUS';
+
+updateStatus([String opt_message]) {
+  if (opt_message != null) {
+    statusText = opt_message;
+  }
+  var statusField = document.getElementById('statusField');
+  if (statusField) {
+    statusField.appendText(statusText);
   }
 }
