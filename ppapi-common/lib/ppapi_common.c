@@ -220,9 +220,12 @@ int AddToMap(void** map, int max_map_size, void* object) {
  * @param[in] max_map_size The size of the map.
  * @param[in] i The index to remove.
  */
-void RemoveFromMap(void** map, int max_map_size, int i) {
-  assert(i >= 0 && i < max_map_size);
-  map[i] = NULL;
+int RemoveFromMap(void** map, int max_map_size, int i) {
+  if (i >= 0 && i < max_map_size) {
+      map[i] = NULL;
+      return 1;
+  }
+  return 0;
 }
 
 /**

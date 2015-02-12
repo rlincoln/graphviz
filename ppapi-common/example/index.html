@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>echo</title>
+</head>
+<body>
+  <h1>Dart NaCl Module Example</h1>
+  
+  <p>
+    <form>
+      <input type="text" value="foo">
+      <input type="submit" value="Send Message" on-click="{{submitForm}}">
+    </form>
+  </p>
+
+  <h2>Status <code id="statusField">NO-STATUS</code></h2>
+  
+  <div id="listener"></div>
+  
+  <script type="application/dart" src="echo.dart"></script>
+  <script src="packages/browser/dart.js"></script>
+</body>
+</html>
