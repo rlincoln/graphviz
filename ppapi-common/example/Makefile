@@ -7,13 +7,9 @@
 # http://www.gnu.org/software/make/manual/make.html
 #
 
-#
-# Get pepper directory for toolchain and includes.
-#
-# If NACL_SDK_ROOT is not set, then assume it can be found three directories up.
-#
-THIS_MAKEFILE := $(abspath $(lastword $(MAKEFILE_LIST)))
-NACL_SDK_ROOT ?= $(abspath $(dir $(THIS_MAKEFILE))../..)
+ifeq (,$(wildcard $(NACL_SDK_ROOT)/tools/oshelpers.py))
+$(error NACL_SDK_ROOT is set to an invalid location: $(NACL_SDK_ROOT))
+endif
 
 # Project Build flags
 WARNINGS := -Wno-long-long -Wall -Wswitch-enum -pedantic -Werror
@@ -44,13 +40,13 @@ export CYGWIN
 all: echo.pexe
 
 clean:
-  $(RM) echo.pexe echo.bc
+	$(RM) echo.pexe echo.bc
 
 echo.bc: echo.cc
-  $(PNACL_CXX) -o $@ $< -O2 $(CXXFLAGS) $(LDFLAGS)
+	$(PNACL_CXX) -o $@ $< -O2 $(CXXFLAGS) $(LDFLAGS)
 
 echo.pexe: echo.bc
-  $(PNACL_FINALIZE) -o $@ $<
+	$(PNACL_FINALIZE) -o $@ $<
 
 
 #
@@ -60,4 +56,4 @@ HTTPD_PY := python $(NACL_SDK_ROOT)/tools/httpd.py
 
 .PHONY: serve
 serve: all
-  $(HTTPD_PY) -C --no-dir-check $(CURDIR)
+	$(HTTPD_PY) -C --no-dir-check $(CURDIR)

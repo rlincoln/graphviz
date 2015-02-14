@@ -20,6 +20,7 @@ class EchoModule extends NaClModule {
 EchoModule module;
 
 main() {
+  querySelector('#sendButton').onClick.listen(submitForm);
   module = new EchoModule('#listener');
 }
 
@@ -44,14 +45,9 @@ void submitForm(Event e) {
   }
 }
 
-var statusText = 'NO-STATUS';
-
-updateStatus([String opt_message]) {
-  if (opt_message != null) {
-    statusText = opt_message;
-  }
-  var statusField = document.getElementById('statusField');
-  if (statusField) {
-    statusField.appendText(statusText);
+updateStatus(String message) {
+  Element statusField = querySelector('#statusField');
+  if (statusField != null) {
+    statusField.text = message;
   }
 }

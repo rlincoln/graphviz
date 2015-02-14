@@ -25,7 +25,7 @@ struct PP_Var GetDictVar(struct PP_Var var, const char* key);
 void PostMessage(const char* format, ...);
 int ParseMessage(struct PP_Var message, const char** out_function, struct PP_Var* out_params);
 int AddToMap(void** map, int max_map_size, void* object);
-void RemoveFromMap(void** map, int max_map_size, int i);
+int RemoveFromMap(void** map, int max_map_size, int i);
 uint32_t GetNumParams(struct PP_Var params);
 int GetParamString(struct PP_Var params, uint32_t index, char** out_string, uint32_t* out_string_len, const char** out_error);
 int GetParamInt(struct PP_Var params, uint32_t index, int32_t* out_int, const char** out_error);
@@ -34,6 +34,7 @@ int GetParamDoubleArray(struct PP_Var params, uint32_t index, uint32_t* out_int,
 void CreateResponse(struct PP_Var* response_var, const char* cmd, const char** out_error);
 void AppendResponseVar(struct PP_Var* response_var, struct PP_Var value, const char** out_error);
 void AppendResponseInt(struct PP_Var* response_var, int32_t value, const char** out_error);
+void AppendResponseDouble(struct PP_Var* response_var, double value, const char** out_error);
 void AppendResponseString(struct PP_Var* response_var, const char* value, const char** out_error);
 void AppendResponseDoubleArray(struct PP_Var* response_var, uint32_t n, double *value, const char** out_error);
 
@@ -75,6 +76,7 @@ void AppendResponseDoubleArray(struct PP_Var* response_var, uint32_t n, double *
 #define CREATE_RESPONSE(name) CreateResponse(output, #name, out_error)
 #define RESPONSE_STRING(var) AppendResponseString(output, var, out_error)
 #define RESPONSE_INT(var) AppendResponseInt(output, var, out_error)
+#define RESPONSE_DOUBLE(var) AppendResponseDouble(output, var, out_error)
 #define RESPONSE_DOUBLE_ARRAY(n, var) AppendResponseDoubleArray(output, n, var, out_error)
 
 

@@ -453,6 +453,12 @@ void AppendResponseInt(struct PP_Var* response_var,
   AppendResponseVar(response_var, PP_MakeInt32(value), out_error);
 }
 
+void AppendResponseDouble(struct PP_Var* response_var,
+                              double value,
+                              const char** out_error) {
+  AppendResponseVar(response_var, PP_MakeDouble(value), out_error);
+}
+
 /**
  * Append a string to the response dictionary.
  * @param[in,out] response_var The response PP_var.
