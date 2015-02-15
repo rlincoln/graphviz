@@ -8,7 +8,9 @@
 # newlib glibc pnacl linux mac win
 VALID_TOOLCHAINS := pnacl
 
-NACL_SDK_ROOT ?= $(abspath $(CURDIR)/../..)
+ifeq (,$(wildcard $(NACL_SDK_ROOT)/tools/oshelpers.py))
+$(error NACL_SDK_ROOT is set to an invalid location: $(NACL_SDK_ROOT))
+endif
 
 CHROME_PATH ?= /opt/google/chrome-beta/google-chrome
 

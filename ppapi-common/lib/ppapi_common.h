@@ -9,6 +9,9 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb.h"
 
+#include "ppapi/c/pp_errors.h"
+#include "ppapi/c/ppp_instance.h"
+
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
@@ -16,6 +19,20 @@
 #include "ppapi/c/ppb_var_array_buffer.h"
 #include "ppapi/c/ppb_var_dictionary.h"
 #include "sdk_util/macros.h"  // for PRINTF_LIKE
+
+
+/*
+static PP_Bool PPAPICommon_Instance_DidCreate(PP_Instance instance,
+		uint32_t argc, const char* argn[], const char* argv[]);
+static void PPAPICommon_Instance_DidDestroy(PP_Instance instance);
+static void PPAPICommon_Instance_DidChangeView(PP_Instance instance,
+		PP_Resource view);
+static void PPAPICommon_Instance_DidChangeFocus(PP_Instance instance,
+		PP_Bool has_focus);
+static PP_Bool PPAPICommon_Instance_HandleDocumentLoad(PP_Instance instance,
+		PP_Resource url_loader);
+*/
+int32_t PPAPICommon_InitializeModule(PP_Module a_module_id, PPB_GetInterface get_browser);
 
 struct PP_Var CStrToVar(const char* str);
 char* VprintfToNewString(const char* format, va_list args) PRINTF_LIKE(1, 0);
@@ -93,5 +110,43 @@ extern PPB_VarDictionary* g_ppb_var_dictionary;//_interface;
 extern PPB_Messaging* g_ppb_messaging;//_interface;
 extern PPB_Instance* g_ppb_instance;//_interface;
 extern PPB_VarArrayBuffer* g_ppb_var_array_buffer;//_interface;
+
+#define GET_INTERFACE(var, type, name)            \
+  var = (type*)(get_browser(name));               \
+  if (!var) {                                     \
+    printf("Unable to get interface " name "\n"); \
+    return PP_ERROR_FAILED;                       \
+  }
+
+
+static PP_Bool PPAPICommon_Instance_DidCreate(PP_Instance instance,
+		uint32_t argc, const char* argn[], const char* argv[]) {
+	g_instance = instance;
+	return PP_TRUE;
+}
+
+static void PPAPICommon_Instance_DidDestroy(PP_Instance instance) {
+}
+
+static void PPAPICommon_Instance_DidChangeView(PP_Instance instance,
+		PP_Resource view) {
+}
+
+static void PPAPICommon_Instance_DidChangeFocus(PP_Instance instance,
+		PP_Bool has_focus) {
+}
+
+static PP_Bool PPAPICommon_Instance_HandleDocumentLoad(PP_Instance instance,
+		PP_Resource url_loader) {
+	return PP_FALSE;
+}
+
+static PPP_Instance g_instance_interface = {
+		&PPAPICommon_Instance_DidCreate,
+		&PPAPICommon_Instance_DidDestroy,
+		&PPAPICommon_Instance_DidChangeView,
+		&PPAPICommon_Instance_DidChangeFocus,
+		&PPAPICommon_Instance_HandleDocumentLoad
+};
 
 #endif /* NACL_MODULE_H_ */

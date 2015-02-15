@@ -17,9 +17,13 @@ enum ModuleStatus {
   CRASHED
 }
 
+enum Toolchain {
+  NEWLIB, GLIBC, PNACL, LINUX, MAX, WIN
+}
+
 abstract class NaClModule {
-  String name = 'nacl_module';
-  String id = 'nacl_module';
+  String name;
+  String get id => '${name}_module';
   String path;
   String src;
   String mimetype = 'application/x-pnacl';
@@ -35,12 +39,10 @@ abstract class NaClModule {
   ModuleStatus _status = ModuleStatus.NO_STATUS;
   ModuleStatus get status => _status;    
   
-  NaClModule(this._wrapper, String packagePath, String manifestName) {
+  NaClModule(this._wrapper, this.name, this.path) {
     if (_wrapper == null) {
       throw new ArgumentError.notNull('wrapper');
     }
-    path = '/packages/$packagePath/';
-    src = manifestName;
     
     _wrapper.addEventListener('load', onLoad, true);
     _wrapper.addEventListener('message', onMessage, true);  
@@ -107,12 +109,12 @@ abstract class NaClModule {
     
   Element _createNaClModule() {
     var embed = new Element.tag('embed');
-    embed.attributes['name'] = 'nacl_module';
-    embed.attributes['id'] = 'nacl_module';
+    embed.attributes['name'] = name;
+    embed.attributes['id'] = id;
     embed.attributes['width'] = width.toString();
     embed.attributes['height'] = height.toString();
     embed.attributes['path'] = path;
-    embed.attributes['src'] = src;
+    embed.attributes['src'] = '$path/$name.nmf';
     embed.attributes['type'] = mimetype;
     return embed;
   }

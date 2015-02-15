@@ -10,7 +10,7 @@ class EchoModule extends NaClModule {
     return new EchoModule._internal(wrapper);
   }
   
-  EchoModule._internal(wrapper) : super(wrapper, 'echo', 'echo.nmf');
+  EchoModule._internal(wrapper) : super(wrapper, 'echo', 'pnacl/Release');
 
   void onMessage(event) {
     window.alert(event.data);

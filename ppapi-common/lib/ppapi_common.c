@@ -48,6 +48,19 @@ PPB_VarArrayBuffer* g_ppb_var_array_buffer = NULL;
 PP_Instance g_instance = 0;
 PPB_GetInterface g_get_browser_interface = NULL;
 
+int32_t PPAPICommon_InitializeModule(PP_Module a_module_id, PPB_GetInterface get_browser) {
+	g_get_browser_interface = get_browser;
+	GET_INTERFACE(g_ppb_instance, PPB_Instance, PPB_INSTANCE_INTERFACE);
+	GET_INTERFACE(g_ppb_messaging, PPB_Messaging, PPB_MESSAGING_INTERFACE);
+	GET_INTERFACE(g_ppb_var, PPB_Var, PPB_VAR_INTERFACE);
+	GET_INTERFACE(g_ppb_var_array, PPB_VarArray, PPB_VAR_ARRAY_INTERFACE);
+	GET_INTERFACE(g_ppb_var_dictionary, PPB_VarDictionary,
+			PPB_VAR_DICTIONARY_INTERFACE);
+	GET_INTERFACE(g_ppb_var_array_buffer, PPB_VarArrayBuffer,
+			PPB_VAR_ARRAY_BUFFER_INTERFACE);
+	return PP_OK;
+}
+
 /**
  * Create a new PP_Var from a C string.
  * @param[in] str The string to convert.
