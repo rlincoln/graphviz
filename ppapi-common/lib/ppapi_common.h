@@ -20,6 +20,12 @@
 #include "ppapi/c/ppb_var_dictionary.h"
 #include "sdk_util/macros.h"  // for PRINTF_LIKE
 
+typedef int (*HandleFunc)(struct PP_Var params,
+                          struct PP_Var* out_var,
+                          const char** error);
+
+int PPAPICommon_RegisterHandler(const char* name, HandleFunc function);
+void PPAPICommon_HandleCommandMessage(PP_Instance instance, struct PP_Var var_message);
 
 /*
 static PP_Bool PPAPICommon_Instance_DidCreate(PP_Instance instance,
@@ -103,9 +109,6 @@ void AppendResponseDoubleArray(struct PP_Var* response_var, uint32_t n, double *
 #define RESPONSE_DOUBLE_ARRAY(n, var) AppendResponseDoubleArray(output, n, var, out_error)
 
 
-typedef int (*HandleFunc)(struct PP_Var params,
-                          struct PP_Var* out_var,
-                          const char** error);
 
 extern PP_Instance g_instance;
 extern PPB_GetInterface g_get_browser_interface;

@@ -19,8 +19,48 @@
 //#include "ppapi/c/ppp.h"
 //#include "ppapi/c/ppp_messaging.h"
 
-//#include "ppapi_common.h"
+#include "ppapi_common.h"
 
+/*
+void Messaging_HandleMessage(PP_Instance instance, struct PP_Var var_message) {
+	struct PP_Var var_id;
+	struct PP_Var var_payload;
+	if (ParsePayloadMessage(var_message, &var_id, &var_payload)) {
+		var_payload = var_message;  // not an id/payload message
+	}
+
+	const char* function_name;
+	struct PP_Var var_params;
+	if (ParseCommandMessage(var_payload, &function_name, &var_params)) {
+		PostIdMessage(var_id, var_payload); 
+		return;
+	}
+
+	if (strcmp(function_name, "echo") != 0) {
+		PostStringMessage("error: unrecognized command: \"%s\"", function_name);
+	}
+
+	if (PostIdMessage(var_id, var_params)) {
+		PostStringMessage("error: unable to post id message");
+	}
+	g_ppb_var->Release(var_id);
+}
+*/
+
+/*
+void (*msg_handler(FuncNameMapping function_map[]))(PP_Instance instance, struct PP_Var message) {
+	g_function_map = function_map;
+	return Messaging_HandleMessage;
+}
+
+static FuncNameMapping echo_function_map[] = {
+	{ NULL, NULL }
+};
+*/
+
+
+
+/*
 static PPB_Var* g_ppb_var = NULL;
 static PPB_Messaging* g_ppb_messaging = NULL;
 static PPB_Instance* g_ppb_instance = NULL;
@@ -49,21 +89,23 @@ static void Instance_DidChangeFocus(PP_Instance instance, PP_Bool has_focus) {
 static PP_Bool Instance_HandleDocumentLoad(PP_Instance instance, PP_Resource url_loader) {
     return PP_FALSE;
 }
-
+*/
 void Messaging_HandleMessage(PP_Instance instance, struct PP_Var var_message) {
-	//g_ppb_messaging->PostMessage(g_instance, var_message);
+	for (int i = 0; i < 4; i++) {
+		g_ppb_messaging->PostMessage(g_instance, var_message);
+	}
 }
 
 PP_EXPORT const void* PPP_GetInterface(const char* interface_name) {
 	if (strcmp(interface_name, PPP_INSTANCE_INTERFACE) == 0) {
-        static PPP_Instance instance_interface = {
+        /*static PPP_Instance instance_interface = {
                 &Instance_DidCreate,
                 &Instance_DidDestroy,
                 &Instance_DidChangeView,
                 &Instance_DidChangeFocus,
                 &Instance_HandleDocumentLoad
-        };
-        return &instance_interface;
+        };*/
+        return &g_instance_interface;
 	}
 	if (strcmp(interface_name, PPP_MESSAGING_INTERFACE) == 0) {
 		static PPP_Messaging messaging_interface = {
@@ -74,24 +116,8 @@ PP_EXPORT const void* PPP_GetInterface(const char* interface_name) {
 	return NULL;
 }
 
-#define GET_INTERFACE(var, type, name)            \
-  var = (type*)(get_browser(name));               \
-  if (!var) {                                     \
-    printf("Unable to get interface " name "\n"); \
-    return PP_ERROR_FAILED;                       \
-  }
-
 PP_EXPORT int32_t PPP_InitializeModule(PP_Module a_module_id, PPB_GetInterface get_browser) {
-	g_get_browser_interface = get_browser;
-	GET_INTERFACE(g_ppb_instance, PPB_Instance, PPB_INSTANCE_INTERFACE);
-	GET_INTERFACE(g_ppb_messaging, PPB_Messaging, PPB_MESSAGING_INTERFACE);
-	GET_INTERFACE(g_ppb_var, PPB_Var, PPB_VAR_INTERFACE);
-	GET_INTERFACE(g_ppb_var_array, PPB_VarArray, PPB_VAR_ARRAY_INTERFACE);
-	GET_INTERFACE(g_ppb_var_dictionary, PPB_VarDictionary,
-			PPB_VAR_DICTIONARY_INTERFACE);
-	GET_INTERFACE(g_ppb_var_array_buffer, PPB_VarArrayBuffer,
-			PPB_VAR_ARRAY_BUFFER_INTERFACE);
-	return PP_OK;
+	return PPAPICommon_InitializeModule(a_module_id, get_browser);
 }
 
 PP_EXPORT void PPP_ShutdownModule() {

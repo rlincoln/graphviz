@@ -14,7 +14,7 @@ class EchoModule extends NaClModule {
 
   void onMessage(event) {
     print(event.data);
-    window.alert('${event.data}');
+    //window.alert('${event.data}');
   }
 }
 

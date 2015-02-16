@@ -107,7 +107,7 @@ abstract class NaClModule {
     _jsModule.callMethod("postMessage", [message]);
   }
   
-  runCommand(String cmd, List args) {    
+  runCommand(String cmd, List args) {
     var message = {
       'cmd': cmd,
       'args': args

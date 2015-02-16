@@ -25,9 +25,12 @@
 #include "ppapi/c/ppb_var_array_buffer.h"
 #include "ppapi/c/ppb_var_dictionary.h"
 
-//#include "nacl_io/osdirent.h"
+typedef struct {
+	const char* name;
+	HandleFunc function;
+} FuncNameMapping;
 
-//#include "nacl_io_demo.h"
+#define MAX_FUNC_MAPPING 50
 
 #define MAX_PARAMS 4
 
@@ -59,6 +62,75 @@ int32_t PPAPICommon_InitializeModule(PP_Module a_module_id, PPB_GetInterface get
 	GET_INTERFACE(g_ppb_var_array_buffer, PPB_VarArrayBuffer,
 			PPB_VAR_ARRAY_BUFFER_INTERFACE);
 	return PP_OK;
+}
+
+static FuncNameMapping g_function_map[MAX_FUNC_MAPPING];
+static unsigned int _reg = 0;
+
+int PPAPICommon_RegisterHandler(const char* name, HandleFunc function) {
+	if (_reg > MAX_FUNC_MAPPING) {
+		return 1;
+	}
+	g_function_map[_reg].name = name;
+	g_function_map[_reg].function = function;
+	_reg++;
+	return 0;
+}
+
+/**
+ * Given a function name, look up its handler function.
+ * @param[in] function_name The function name to look up.
+ * @return The handler function mapped to |function_name|.
+ */
+static HandleFunc GetFunctionByName(const char* function_name) {
+	FuncNameMapping* map_iter = g_function_map;
+	for (; map_iter->name; ++map_iter) {
+		if (strcmp(map_iter->name, function_name) == 0) {
+			return map_iter->function;
+		}
+	}
+	return NULL;
+}
+
+void PPAPICommon_HandleCommandMessage(PP_Instance instance, struct PP_Var var_message) {
+	struct PP_Var var_id = PP_MakeUndefined();
+	struct PP_Var var_payload;
+	if (ParsePayloadMessage(var_message, &var_id, &var_payload)) {
+		var_payload = var_message;  // not an id/payload message
+	}
+
+	const char* function_name;
+	struct PP_Var var_params;
+	if (ParseCommandMessage(var_payload, &function_name, &var_params)) {
+		PostStringMessage("Error: Unable to parse message");
+		return;
+	}
+
+	HandleFunc function = GetFunctionByName(function_name);
+	if (!function) {
+		PostStringMessage("Error: Unknown function \"%s\"", function_name);
+		return;
+	}
+
+	
+	struct PP_Var var_result;
+	const char* error;
+	int result = (*function)(var_params, &var_result, &error);
+	if (result != 0) {
+		if (error != NULL) {
+			PostStringMessage("Error: \"%s\" failed: %s.", function_name, error);
+			free((void*) error);
+		} else {
+			PostStringMessage("Error: \"%s\" failed.", function_name);
+		}
+		return;
+	}
+	
+	if (PostIdMessage(var_id, var_result)) {
+		PostStringMessage("error: unable to post id message");
+	}
+	g_ppb_var->Release(var_id);
+	g_ppb_var->Release(var_result);
 }
 
 /**
