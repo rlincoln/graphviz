@@ -1,4 +1,4 @@
-FROM rlincoln/nacl_sdk
+FROM rlincoln/nacl-sdk:pepper_38
 
 ADD . /naclports/src/ports/ppapi-common
 
