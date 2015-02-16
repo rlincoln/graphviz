@@ -154,12 +154,22 @@ struct PP_Var GetDictVar(struct PP_Var dict, const char* key) {
   return value;
 }
 
+int SetDictVar(struct PP_Var var_dict, const char* key, struct PP_Var var_value) {
+	struct PP_Var var_key = CStrToVar(key);
+	int rc = g_ppb_var_dictionary->Set(var_dict, var_key, var_value);
+	g_ppb_var->Release(var_key);
+	if (rc == 0) {
+		return 1;
+	}
+	return 0;
+}
+
 /**
  * Post a message to JavaScript.
  * @param[in] format A printf format string.
  * @param[in] ... The printf arguments.
  */
-void PostMessage(const char* format, ...) {
+void PostStringMessage(const char* format, ...) {
   struct PP_Var var;
   va_list args;
 
@@ -171,6 +181,72 @@ void PostMessage(const char* format, ...) {
   g_ppb_var->Release(var);
 }
 
+int PostIdMessage(struct PP_Var var_id, struct PP_Var var_message) {
+	if (var_id.type == PP_VARTYPE_UNDEFINED) {
+		g_ppb_messaging->PostMessage(g_instance, var_message);
+		return 0;
+	}
+
+	struct PP_Var var_result = g_ppb_var_dictionary->Create();
+	if (SetDictVar(var_result, "id", var_id)) {
+		return 1;
+	}
+	if (SetDictVar(var_result, "payload", var_message)) {
+		return 1;
+	}
+/*
+	struct PP_Var var_id_key = CStrToVar("id");
+	int rc  = g_ppb_var_dictionary->Set(var_result, var_id_key, var_id);
+	g_ppb_var->Release(var_id_key);
+	if (rc == 0) {
+		return 1;
+	}
+
+	struct PP_Var var_payload_key = CStrToVar("payload");
+	int rc  = g_ppb_var_dictionary->Set(var_result, var_payload_key,
+		var_payload);
+	g_ppb_var->Release(var_payload_key);
+	if (rc == 0) {
+		return 1;
+	}
+*/
+	g_ppb_messaging->PostMessage(g_instance, var_result);
+	g_ppb_var->Release(var_result);
+	return 0;
+}
+
+/**
+ * Given a message from JavaScript, parse it for id and payload.
+ *
+ * The format of the message is:
+ * {
+ *  "id": <message id>,
+ *  "payload": <out_payload>
+ * }
+ *
+ * If the message is not a JS object then 1 is returned.
+ *
+ * @param[in] message The message to parse.
+ * @param[out] out_id The message id or PP_VARTYPE_UNDEFINED.
+ * @param[out] out_payload A PP_Var payload or PP_VARTYPE_UNDEFINED.
+ * @return 0 if successful, otherwise 1.
+ */
+int ParsePayloadMessage(struct PP_Var message,
+                        struct PP_Var* out_id,
+                        struct PP_Var* out_payload) {
+  if (message.type != PP_VARTYPE_DICTIONARY) {
+    return 1;
+  }
+
+  *out_id = GetDictVar(message, "id");
+
+  *out_payload = GetDictVar(message, "payload");
+  if ((*out_payload).type == PP_VARTYPE_UNDEFINED) {
+    return 1;
+  }
+  return 0;
+}
+
 /**
  * Given a message from JavaScript, parse it for functions and parameters.
  *
@@ -180,12 +256,14 @@ void PostMessage(const char* format, ...) {
  *  "args": [<arg0>, <arg1>, ...]
  * }
  *
+ * If the message is not a JS object then 1 is returned.
+ *
  * @param[in] message The message to parse.
- * @param[out] out_function The function name.
- * @param[out] out_params A PP_Var array.
+ * @param[out] out_function The function name or NULL.
+ * @param[out] out_params A PP_Var array or payload.
  * @return 0 if successful, otherwise 1.
  */
-int ParseMessage(struct PP_Var message,
+int ParseCommandMessage(struct PP_Var message,
                         const char** out_function,
                         struct PP_Var* out_params) {
   if (message.type != PP_VARTYPE_DICTIONARY) {

@@ -37,10 +37,16 @@ int32_t PPAPICommon_InitializeModule(PP_Module a_module_id, PPB_GetInterface get
 struct PP_Var CStrToVar(const char* str);
 char* VprintfToNewString(const char* format, va_list args) PRINTF_LIKE(1, 0);
 char* PrintfToNewString(const char* format, ...) PRINTF_LIKE(1, 2);
-struct PP_Var GetDictVar(struct PP_Var var, const char* key);
 
-void PostMessage(const char* format, ...);
-int ParseMessage(struct PP_Var message, const char** out_function, struct PP_Var* out_params);
+struct PP_Var GetDictVar(struct PP_Var var, const char* key);
+int SetDictVar(struct PP_Var dict, const char* key, struct PP_Var var_value);
+
+int ParsePayloadMessage(struct PP_Var message, struct PP_Var* out_id, struct PP_Var* out_payload);
+int ParseCommandMessage(struct PP_Var message, const char** out_function, struct PP_Var* out_params);
+
+void PostStringMessage(const char* format, ...);
+int PostIdMessage(struct PP_Var var_id, struct PP_Var var_message);
+
 int AddToMap(void** map, int max_map_size, void* object);
 int RemoveFromMap(void** map, int max_map_size, int i);
 uint32_t GetNumParams(struct PP_Var params);

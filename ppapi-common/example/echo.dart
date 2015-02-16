@@ -13,7 +13,8 @@ class EchoModule extends NaClModule {
   EchoModule._internal(wrapper) : super(wrapper, 'echo', 'pnacl/Release');
 
   void onMessage(event) {
-    window.alert(event.data);
+    print(event.data);
+    window.alert('${event.data}');
   }
 }
 
@@ -32,7 +33,8 @@ void submitForm(Event e) {
     updateStatus("LOADING");
     module.loadModule().then((_) {
       updateStatus("RUNNING");
-      module.postMessage(messageInput.value);
+      //module.postMessage(messageInput.value);
+      module.runCommand("echo", [messageInput.value]);
     }, onError: (_) {
       if (module.status == ModuleStatus.EXITED) {
         updateStatus('EXITED [${module.exitStatus}]');
@@ -41,7 +43,8 @@ void submitForm(Event e) {
       }
     });
   } else {
-    module.postMessage(messageInput.value);
+    //module.postMessage(messageInput.value);
+    module.runCommand("echo", [messageInput.value]);
   }
 }
 

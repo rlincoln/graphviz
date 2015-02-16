@@ -106,6 +106,14 @@ abstract class NaClModule {
     }
     _jsModule.callMethod("postMessage", [message]);
   }
+  
+  runCommand(String cmd, List args) {    
+    var message = {
+      'cmd': cmd,
+      'args': args
+    };
+    postMessage(message);
+  } 
     
   Element _createNaClModule() {
     var embed = new Element.tag('embed');
