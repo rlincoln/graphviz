@@ -1,9 +1,12 @@
 library ppapi_common.example.echo;
 
 import 'dart:html';
+import 'dart:async';
 import 'package:ppapi_common/nacl_module.dart';
 
-class EchoModule extends NaClModule {
+final module = new EchoModule('#listener');
+
+class EchoModule extends AsyncNaClModule {
 
   factory EchoModule(String selector) {
     var wrapper = document.querySelector(selector);
@@ -12,17 +15,9 @@ class EchoModule extends NaClModule {
   
   EchoModule._internal(wrapper) : super(wrapper, 'echo', 'pnacl/Release');
 
-  void onMessage(event) {
-    print(event.data);
-    //window.alert('${event.data}');
+  Future echo(message) {
+    return runCommand('echo', [message]);
   }
-}
-
-EchoModule module;
-
-main() {
-  querySelector('#sendButton').onClick.listen(submitForm);
-  module = new EchoModule('#listener');
 }
 
 void submitForm(Event e) {
@@ -33,8 +28,9 @@ void submitForm(Event e) {
     updateStatus("LOADING");
     module.loadModule().then((_) {
       updateStatus("RUNNING");
-      //module.postMessage(messageInput.value);
-      module.runCommand("echo", [messageInput.value]);
+      module.echo(messageInput.value).then((retval) {
+        print(retval);  
+      });
     }, onError: (_) {
       if (module.status == ModuleStatus.EXITED) {
         updateStatus('EXITED [${module.exitStatus}]');
@@ -43,8 +39,9 @@ void submitForm(Event e) {
       }
     });
   } else {
-    //module.postMessage(messageInput.value);
-    module.runCommand("echo", [messageInput.value]);
+    module.echo(messageInput.value).then((retval) {
+      print(retval);  
+    });
   }
 }
 
@@ -53,4 +50,8 @@ updateStatus(String message) {
   if (statusField != null) {
     statusField.text = message;
   }
+}
+
+main() {
+  querySelector('#sendButton').onClick.listen(submitForm);
 }

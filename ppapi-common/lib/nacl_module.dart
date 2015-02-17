@@ -132,8 +132,8 @@ abstract class AsyncNaClModule extends NaClModule {
   final Random _random = new Random();
   final Map<String, Completer> _messageCompleters = {};
 
-  AsyncNaClModule(wrapper, String packagePath, String manifestName) :
-    super(wrapper, packagePath, manifestName);
+  AsyncNaClModule(wrapper, String name, String path) :
+    super(wrapper, name, path);
   
   dynamic get _nextId => _random.nextInt(1 << 31);
   
