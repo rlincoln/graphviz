@@ -1,0 +1,5 @@
+/pubspec.lock
+
+/.pub/*
+/packages/*
+/example/packages
