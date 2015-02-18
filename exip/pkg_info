@@ -1,6 +1,0 @@
-NAME=exip
-VERSION=0.5.4
-URL=http://sourceforge.net/projects/exip/files/exip-0.5.4.tar.gz
-LICENSE=BSD
-DEPENDS=(check)
-SHA1=d762b9349359e2f62747b877ff22c9bef96be661

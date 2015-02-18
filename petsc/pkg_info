@@ -1,7 +1,0 @@
-NAME=petsc
-VERSION=3.5.2
-URL=http://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-lite-3.5.2.tar.gz
-LICENSE=BSD
-ARCHIVE_ROOT=petsc-3.5.2
-DEPENDS=(f2cblaslapack)
-SHA1=d60d1735762f2e398774514451e137580bb2c7bb

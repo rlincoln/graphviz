@@ -1,5 +1,0 @@
-NAME=f2cblaslapack
-VERSION=3.4.2.q1
-URL=http://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.4.2.q1.tar.gz
-LICENSE=NetLib
-SHA1=34571c3e2680ffc41aeeac452fecd369f2ee6975
