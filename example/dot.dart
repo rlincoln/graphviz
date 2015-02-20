@@ -1,3 +1,4 @@
+import 'dart:html';
 import 'package:graphviz/graphviz.dart';
 
 final simple = '''digraph G {
@@ -34,8 +35,10 @@ final cluster = '''digraph G {
 }''';
 
 main() {
-  var module = new GraphvizModule('#listener');
-  module.dot(simple).then((out) {
-    print(out);
+  final code = querySelector('#code');
+  final module = new GraphvizModule('#listener');
+  module.dot(simple, render: Render.SVG, layout: Layout.DOT, verbose: true).then((out) {
+    //print('Output: $out');
+    code.text = '$out';
   });
 }

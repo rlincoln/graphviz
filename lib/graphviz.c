@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include <sys/mount.h>
+
 #include "ppapi/c/ppp.h"
 #include "ppapi/c/ppp_messaging.h"
 
@@ -13,6 +15,9 @@
 
 #include "gvc.h"
 #include "gvplugin.h"
+
+#include "nacl_io/ioctl.h"
+#include "nacl_io/nacl_io.h"
 
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 
@@ -33,10 +38,35 @@ lt_symlist_t lt_preloaded_symbols[] = {
 	{ NULL, NULL }
 };
 
+char* read_all_file(char* fname) {
+	char* buffer = 0;
+	long length;
+	FILE* f = fopen(fname, "rb");
+
+	if (f) {
+		fseek(f, 0, SEEK_END);
+		length = ftell(f);
+		fseek(f, 0, SEEK_SET);
+		buffer = malloc(length);
+		if (buffer) {
+			if (fread(buffer, 1, length, f) != length) {
+				return 0;
+			}
+		}
+		fclose(f);
+	}
+	return buffer;
+}
+
 int HandleDot(struct PP_Var params, struct PP_Var* output,
 		const char** out_error) {
-	CHECK_PARAM_COUNT(set, 4);
+	CHECK_PARAM_COUNT(dot, 4);
 	PARAM_STRING(0, dotdata);
+	PARAM_STRING(1, output_format);
+	PARAM_STRING(2, layout_engine);
+	PARAM_INT(3, verbose);
+
+//	fprintf(stderr, "dotdata: %s", dotdata);
 
 	graph_t *prev = NULL;
 
@@ -44,9 +74,9 @@ int HandleDot(struct PP_Var params, struct PP_Var* output,
 	int rc = 0;
 	const int K = 32;
 
-	char *output_format = "svg";
-	char *layout_engine = "dot";
-	int verbose = 1;
+//	char *output_format = "xdot";
+//	char *layout_engine = "dot";
+//	int verbose = 1;
 
 	// Generate file names.
 	int irand = rand();
@@ -59,8 +89,8 @@ int HandleDot(struct PP_Var params, struct PP_Var* output,
 	// Write the message content to the input file.
 	FILE *fp_in = fopen(infile, "w");
 	if (fp_in == NULL) {
-		fprintf(stderr, "error: fopen %s", infile);
-		return 0;
+		*out_error = PrintfToNewString("fopen %s", infile);
+		return 1;
 	}
 	fprintf(fp_in, "%s", dotdata);
 	fclose(fp_in);
@@ -71,19 +101,19 @@ int HandleDot(struct PP_Var params, struct PP_Var* output,
 /*
 	fp_in = fopen("/gv/in", "rw");
 	if (fp_in != NULL) {
-	dup2(fileno(fp_in), 0);
-	fclose(fp_in);
+		dup2(fileno(fp_in), 0);
+		fclose(fp_in);
 	}
 
 	fp_in = fopen("/gv/out", "w");
 	if (fp_in != NULL) {
-	fprintf(fp_in, "%s", message);
-	fclose(fp_in);
+		fprintf(fp_in, "%s", message);
+		fclose(fp_in);
 	}
 */
 
 	// Build the argument list.
-	char formatflag[K], layoutflag[K], outflag[K];
+	/*char formatflag[K], layoutflag[K], outflag[K];
 	sprintf(formatflag, "-T%s", output_format);
 	sprintf(layoutflag, "-K%s", layout_engine);
 	sprintf(outflag, "-o%s", outfile);
@@ -96,6 +126,19 @@ int HandleDot(struct PP_Var params, struct PP_Var* output,
 	argv[4] = infile;
 	if (verbose) {
 		argv[5] = "-v";
+	}*/
+
+	char formatflag[K], layoutflag[K];
+	sprintf(formatflag, "-T%s", output_format);
+	sprintf(layoutflag, "-K%s", layout_engine);
+	int argc = verbose ? 5 : 4;
+	char** argv = calloc(sizeof(char*), argc);
+	argv[0] = "dot";
+	argv[1] = formatflag;
+	argv[2] = layoutflag;
+	argv[3] = infile;
+	if (verbose) {
+		argv[4] = "-v";
 	}
 
 /*
@@ -110,20 +153,26 @@ int HandleDot(struct PP_Var params, struct PP_Var* output,
 	// Redirect stdout and stderr to file.
 	int out = open(stdoutfile, O_RDWR|O_CREAT|O_APPEND, 0600);
 	if (-1 == out) {
+		*out_error = PrintfToNewString("open stdout file (%d)", out);
+		return 1;
 	}
 
 	int err = open(stderrfile, O_RDWR|O_CREAT|O_APPEND, 0600);
 	if (-1 == err) {
+		*out_error = PrintfToNewString("open stderr file (%d)", err);
+		return 1;
 	}
 
 	int save_out = dup(fileno(stdout));
 	int save_err = dup(fileno(stderr));
 
 	if (-1 == dup2(out, fileno(stdout))) {
-	// cannot redirect stdout
+		*out_error = PrintfToNewString("redirect stdout");
+		return 1;
 	}
 	if (-1 == dup2(err, fileno(stderr))) {
-	// cannot redirect stderr
+		*out_error = PrintfToNewString("redirect stderr");
+		return 1;
 	}
 
 	// Build and perform layout and render jobs.
@@ -137,8 +186,8 @@ int HandleDot(struct PP_Var params, struct PP_Var* output,
 	} else {
 		while ((G = gvNextInputGraph(Gvc))) {
 			if (prev) {
-			gvFreeLayout(Gvc, prev);
-			agclose(prev);
+				gvFreeLayout(Gvc, prev);
+				agclose(prev);
 			}
 			gvLayoutJobs(Gvc, G);
 			gvRenderJobs(Gvc, G);
@@ -163,6 +212,8 @@ int HandleDot(struct PP_Var params, struct PP_Var* output,
 	close(save_err);
 
 	if (MAX(rc,rr) != 0) {
+		*out_error = PrintfToNewString("rc: %d rr: %d", rc, rr);
+		return 1;
 		/*PP_Bool result;
 
 		struct PP_Var dict_var = g_ppb_var_dictionary->Create();
@@ -182,7 +233,7 @@ int HandleDot(struct PP_Var params, struct PP_Var* output,
 
 
 	// Create a message with the content of the output file.
-	char* buffer = 0;
+	/*char* buffer = 0;
 	long length;
 	FILE* f = fopen(outfile, "rb");
 
@@ -193,26 +244,26 @@ int HandleDot(struct PP_Var params, struct PP_Var* output,
 		buffer = malloc(length);
 		if (buffer) {
 			if (fread(buffer, 1, length, f) != length) {
+				*out_error = PrintfToNewString("fread stdout");
+				return 1;
 			}
 		}
 		fclose(f);
+	}*/
+
+	char* outfile_buffer = read_all_file(outfile);
+	if (outfile_buffer != 0) {
+		fprintf(stderr, "outfile: %s", outfile_buffer);
+	}
+	char* stdoutfile_buffer = read_all_file(stdoutfile);
+	if (stdoutfile_buffer != 0) {
+		fprintf(stderr, "stdoutfile: %s", stdoutfile_buffer);
+	}
+	char* stderrfile_buffer = read_all_file(stderrfile);
+	if (stderrfile_buffer != 0) {
+		fprintf(stderr, "stderrfile: %s", stderrfile_buffer);
 	}
 
-	//if (!buffer) {
-	//	buffer = "svg";
-	//}
-/*
-	if (buffer) {
-		struct PP_Var var_reply = AllocateVarFromCStr(buffer);
-		ppb_messaging_interface->PostMessage(instance, var_reply);
-		ppb_var_interface->Release(var_reply);
-		//free(pfout);
-	} else {
-		struct PP_Var var_reply = AllocateVarFromCStr("nil");
-		ppb_messaging_interface->PostMessage(instance, var_reply);
-		ppb_var_interface->Release(var_reply);
-	}
-*/
 	remove(infile);
 	remove(outfile);
 	remove(stdoutfile);
@@ -221,13 +272,42 @@ int HandleDot(struct PP_Var params, struct PP_Var* output,
 //	free(message);
 
 	CREATE_RESPONSE(dot);
-	RESPONSE_STRING(buffer);
+//	RESPONSE_STRING(outfile_buffer);
+	RESPONSE_STRING(stdoutfile_buffer);
+	RESPONSE_STRING(stderrfile_buffer);
 	return 0;
+}
+
+static PP_Bool Instance_DidCreate(PP_Instance instance, uint32_t argc,
+		const char* argn[], const char* argv[]) {
+	g_instance = instance;
+
+	srand(time(NULL));
+
+	nacl_io_init_ppapi(instance, g_get_browser_interface);
+	mount("", "/gv", "memfs", 0, "");
+
+	int fd1 = open("/dev/console1", O_WRONLY);
+	dup2(fd1, 1);
+
+	int fd2 = open("/dev/console1", O_WRONLY);
+	dup2(fd2, 2);
+
+	return PP_TRUE;
 }
 
 PP_EXPORT const void* PPP_GetInterface(const char* interface_name) {
 	if (strcmp(interface_name, PPP_INSTANCE_INTERFACE) == 0) {
-		return &g_instance_interface;
+		static PPP_Instance instance_interface = {
+			&Instance_DidCreate,
+			&PPAPICommon_Instance_DidDestroy,
+			&PPAPICommon_Instance_DidChangeView,
+			&PPAPICommon_Instance_DidChangeFocus,
+			&PPAPICommon_Instance_HandleDocumentLoad
+		};
+		return &instance_interface;
+		//g_instance_interface.DidCreate = &Instance_DidCreate;
+		//return &g_instance_interface;
 	}
 
 	if (strcmp(interface_name, PPP_MESSAGING_INTERFACE) == 0) {
