@@ -1,6 +1,7 @@
 NAME=graphviz
 VERSION=2.38.0
-URL=http://www.graphviz.org/pub/graphviz/stable/SOURCES/graphviz-2.38.0.tar.gz
+#URL=http://www.graphviz.org/pub/graphviz/stable/SOURCES/graphviz-2.38.0.tar.gz
+URL=http://204.178.9.49/pub/graphviz/stable/SOURCES/graphviz-2.38.0.tar.gz
 LICENSE=EPL
 # DEPENDS=(cairo expat freetype fontconfig glib libpng pango zlib)
 DEPENDS=(cairo expat freetype fontconfig libpng zlib)

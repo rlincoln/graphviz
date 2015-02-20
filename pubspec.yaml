@@ -4,10 +4,13 @@ dependencies:
   browser: any
   logging: '>=0.9.2 <0.10.0'
   polymer: '>=0.15.5 <0.16.0'
+  ppapi_common:
+    path: ../ppapi_common
 dev_dependencies:
   unittest: '>=0.11.0+3 <0.12.0'
 transformers:
 - $dart2js:
-    commandLineOptions: [--enable-enum]
+    commandLineOptions:
+    - --enable-enum
 - polymer:
     entry_points: example/index.html
