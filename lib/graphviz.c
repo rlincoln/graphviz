@@ -14,6 +14,8 @@
 #include "gvc.h"
 #include "gvplugin.h"
 
+#define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
+
 static GVC_t *Gvc;
 static graph_t * G;
 
@@ -161,7 +163,7 @@ int HandleDot(struct PP_Var params, struct PP_Var* output,
 	close(save_err);
 
 	if (MAX(rc,rr) != 0) {
-		PP_Bool result;
+		/*PP_Bool result;
 
 		struct PP_Var dict_var = g_ppb_var_dictionary->Create();
 		struct PP_Var key_var = CStrToVar(key);
@@ -175,7 +177,7 @@ int HandleDot(struct PP_Var params, struct PP_Var* output,
 			PSInterfaceVar()->Release(dict_var);
 			*out_error = PrintfToNewString("Unable to set \"%s\" key in result dictionary", key);
 			return;
-		}
+		}*/
 	}
 
 
