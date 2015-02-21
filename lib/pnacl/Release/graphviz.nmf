@@ -1,0 +1,12 @@
+{
+  "program": {
+    "portable": {
+      "pnacl-translate": {
+        "url": "graphviz.pexe"
+      },
+      "pnacl-debug": {
+        "url": "graphviz_unstripped.bc"
+      }
+    }
+  }
+}
