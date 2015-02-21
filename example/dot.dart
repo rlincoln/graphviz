@@ -1,11 +1,6 @@
 import 'dart:html';
 import 'package:graphviz/graphviz.dart';
 
-final simple = '''digraph G {
-  A -> B;
-  A -> C;
-}''';
-
 final cluster = '''digraph G {
 
   subgraph cluster_0 {
@@ -37,8 +32,10 @@ final cluster = '''digraph G {
 main() {
   final code = querySelector('#code');
   final module = new GraphvizModule('#listener');
-  module.dot(simple, render: Render.SVG, layout: Layout.DOT, verbose: true).then((out) {
-    //print('Output: $out');
-    code.text = '$out';
+  module.dot(cluster, render: Render.SVG, layout: Layout.DOT,
+      verbose: true).then((GraphvizOutput out) {
+    code.text = '${out.log}';
+    final doc = new DomParser().parseFromString(out.output, 'text/xml');
+    document.body.append(document.importNode(doc.documentElement, true));
   });
 }

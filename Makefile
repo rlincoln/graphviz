@@ -12,7 +12,7 @@ TARGET = graphviz
 
 include $(NACL_SDK_ROOT)/tools/common.mk
 
-LIBS = ppapi pthread ppapi_common nacl_io gvplugin_core gvplugin_dot_layout gvc cgraph expat z cdt gvpr pathplan xdot gvplugin_neato_layout
+LIBS = ppapi pthread ppapi_common nacl_io gvplugin_core gvplugin_dot_layout gvplugin_neato_layout gvc cgraph expat z cdt gvpr pathplan xdot
 
 CFLAGS = -Wall -std=gnu99 -I/usr/local/include/graphviz/
 LDFLAGS = -L/usr/lib/ -L/usr/local/lib/graphviz/

@@ -8,4 +8,4 @@ docker run -v $(pwd):/naclports/src/ports/graphviz \
   "mount -o remount,exec /dev/shm && \
   naclports --toolchain=pnacl --arch=pnacl -v install graphviz"
 
-docker commit $(docker ps -l -q) graphviz
+docker commit $(docker ps -l -q) rlincoln/graphviz

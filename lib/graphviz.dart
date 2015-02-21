@@ -22,15 +22,25 @@ class GraphvizModule extends AsyncNaClModule {
   GraphvizModule._internal(wrapper) : super(wrapper, 'graphviz',
       '/packages/graphviz/pnacl/Release');
 
-  Future dot(String dotdata, {Render render: Render.XDOT,
+  Future<GraphvizOutput> dot(String dotdata, {Render render: Render.XDOT,
       Layout layout: Layout.DOT, bool verbose: false}) {
     return runCommand('dot', [
       dotdata,
       _toStringRender(render),
       _toStringLayout(layout),
       verbose ? 1 : 0
-    ]);
+    ]).then((retval) {
+      if (retval.length != 2) {
+        throw new ArgumentError.value(retval, 'retval', 'expected: 2 actual: ${retval.length}');
+      }
+      return new GraphvizOutput(retval[0], retval[1]);
+    });
   }
+}
+
+class GraphvizOutput {
+  final String output, log;
+  GraphvizOutput(this.output, this.log);
 }
 
 String _toStringRender(Render render) {
