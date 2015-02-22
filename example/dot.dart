@@ -31,7 +31,7 @@ final cluster = '''digraph G {
 
 main() {
   final code = querySelector('#code');
-  final module = new GraphvizModule('#listener');
+  final module = new GraphvizNaClModule.selector('#listener');
   module.dot(cluster, render: Render.SVG, layout: Layout.DOT,
       verbose: true).then((GraphvizOutput out) {
     code.text = '${out.log}';

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  	<meta charset="utf-8">
+    <title>graphviz component</title>
+
+    <link rel="import" href="packages/paper_elements/paper_icon_button.html">
+
+    <link rel="import" href="packages/graphviz/components/graphviz_module.html">
+    <!-- <link rel="import" href="../../lib/components/graphviz_module.html"> -->
+    
+    <!-- <link rel="import" href="packages/graphviz/graphviz_module.html"> --> 
+  </head>
+  <body unresolved>
+    <paper-icon-button icon="arrow-back"></paper-icon-button>
+    <!--
+  <graphviz-module text="digraph G {A -> B; A -> C;}"></graphviz-module>
+  -->
+
+    <graphviz-module>
+      digraph G {
+        A -> B;
+        A -> C;
+      }
+    </graphviz-module>
+    <script type="application/dart">export 'package:polymer/init.dart';</script>
+    <script src="packages/browser/dart.js"></script>
+  </body>
+</html>

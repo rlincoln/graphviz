@@ -12,17 +12,17 @@ enum Layout {
   DOT, NEATO
 }
 
-class GraphvizModule extends AsyncNaClModule {
+class GraphvizNaClModule extends AsyncNaClModule {
 
-  factory GraphvizModule(String selector) {
+  factory GraphvizNaClModule.selector(String selector) {
     var wrapper = document.querySelector(selector);
-    return new GraphvizModule._internal(wrapper);
+    return new GraphvizNaClModule(wrapper);
   }
   
-  GraphvizModule._internal(wrapper) : super(wrapper, 'graphviz',
+  GraphvizNaClModule(Element wrapper) : super(wrapper, 'graphviz',
       '/packages/graphviz/pnacl/Release');
 
-  Future<GraphvizOutput> dot(String dotdata, {Render render: Render.XDOT,
+  Future<GraphvizOutput> dot(String dotdata, {Render render: Render.SVG,
       Layout layout: Layout.DOT, bool verbose: false}) {
     return runCommand('dot', [
       dotdata,
