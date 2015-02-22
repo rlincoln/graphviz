@@ -11,7 +11,7 @@ import '../graphviz.dart';
 @CustomTag('graphviz-module')
 class GraphvizModule extends PolymerElement {//with Observable {
   @published String layout;
-  @published num width, height;
+  @published num width = 0, height = 0;
   @published String text;
   
   DivElement _listener;
@@ -48,7 +48,13 @@ class GraphvizModule extends PolymerElement {//with Observable {
     _module.dot(newText, layout: Layout.DOT).then((out) {
       print('out: ${out.output}');
       final doc = _parser.parseFromString(out.output, 'text/xml');
-      document.body.append(document.importNode(doc.documentElement, true));      
+      final node = document.importNode(doc.documentElement, true);
+//      document.body.append(node);
+      final output = this.$['output'] as Element;
+      while (output.firstChild != null) {
+        output.firstChild.remove();
+      }
+      output.append(node);
     });
   }
 }

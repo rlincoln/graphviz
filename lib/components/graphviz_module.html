@@ -2,7 +2,14 @@
 
 <polymer-element name="graphviz-module">
   <template>
+    <style>
+    #listener {
+      height: 0;
+      width: 0;
+    }
+    </style>
     <div id="listener"></div>
+    <div id="output"></div>
   </template>
   <script type="application/dart" src="graphviz_module.dart"></script>
 </polymer-element>
