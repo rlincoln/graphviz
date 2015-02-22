@@ -9,7 +9,7 @@ enum Render {
 }
 
 enum Layout {
-  DOT, NEATO
+  DOT, NEATO, CIRCO, FDP, NOP, NOP1, NOP2, OSAGE, PATCHWORK, SFDP, TWOPI
 }
 
 class GraphvizNaClModule extends AsyncNaClModule {
@@ -26,8 +26,8 @@ class GraphvizNaClModule extends AsyncNaClModule {
       Layout layout: Layout.DOT, bool verbose: false}) {
     return runCommand('dot', [
       dotdata,
-      _toStringRender(render),
-      _toStringLayout(layout),
+      render.toString().split('.').last.toLowerCase(),
+      layout.toString().split('.').last.toLowerCase(),
       verbose ? 1 : 0
     ]).then((retval) {
       if (retval.length != 2) {
@@ -41,36 +41,4 @@ class GraphvizNaClModule extends AsyncNaClModule {
 class GraphvizOutput {
   final String output, log;
   GraphvizOutput(this.output, this.log);
-}
-
-String _toStringRender(Render render) {
-  String s;
-  switch (render) {
-    case Render.PS:
-      s = 'ps';
-      break;
-    case Render.SVG:
-      s = 'svg';
-      break;
-    case Render.VML:
-      s = 'vml';
-      break;
-    case Render.XDOT:
-      s = 'xdot';
-      break;
-  }
-  return s;
-}
-
-String _toStringLayout(Layout layout) {
-  String s;
-  switch (layout) {
-    case Layout.DOT:
-      s = 'dot';
-      break;
-    case Layout.NEATO:
-      s = 'neato';
-      break;
-  }
-  return s;
 }
