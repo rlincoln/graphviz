@@ -31,7 +31,8 @@ class GraphvizNaClModule extends AsyncNaClModule {
       verbose ? 1 : 0
     ]).then((retval) {
       if (retval.length != 2) {
-        throw new ArgumentError.value(retval, 'retval', 'expected: 2 actual: ${retval.length}');
+        throw new ArgumentError.value(retval, 'retval',
+            'expected: 2 actual: ${retval.length}');
       }
       return new GraphvizOutput(retval[0], retval[1]);
     });
@@ -41,4 +42,33 @@ class GraphvizNaClModule extends AsyncNaClModule {
 class GraphvizOutput {
   final String output, log;
   GraphvizOutput(this.output, this.log);
+}
+
+Layout parseLayout(String l) {
+  switch (l.toLowerCase()) {
+    case 'dot':
+      return Layout.DOT;
+    case 'neato':
+      return Layout.NEATO;
+    case 'circo':
+      return Layout.CIRCO;
+    case 'fdp':
+      return Layout.FDP;
+    case 'nop':
+      return Layout.NOP;
+    case 'nop1':
+      return Layout.NOP1;
+    case 'nop2':
+      return Layout.NOP2;
+    case 'osage':
+      return Layout.OSAGE;
+    case 'patchwork':
+      return Layout.PATCHWORK;
+    case 'sfdp':
+      return Layout.SFDP;
+    case 'twopi':
+      return Layout.TWOPI;
+    default:
+      throw new ArgumentError.value(l);
+  }
 }

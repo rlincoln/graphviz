@@ -3,9 +3,25 @@
   <head>
   	<meta charset="utf-8">
     <title>dot</title>
-  </head> 
+  </head>
   <body>
+    <form>
+      <select id="graphs">
+        <option value="simple">simple</option>
+        <option value="cluster">cluster</option>
+      </select>
+      <select id="layouts">
+        <option value="dot">dot</option>
+        <option value="neato">neato</option>
+        <option value="twopi">twopi</option>
+        <option value="circo">circo</option>
+        <option value="fdp">fdp</option>
+      </select>
+      <input type="submit" value="Layout" id="layout">
+    </form>
+
     <pre><code id="code"></code></pre>
+    <div id="output"></div>
     <div id="listener"></div>
 
     <script type="application/dart" src="dot.dart"></script>
