@@ -12,7 +12,7 @@ import '../graphviz.dart';
 class GraphvizModule extends PolymerElement {//with Observable {
   @published String layout;
   @published num width = 0, height = 0;
-  @published String text;
+  @published String dot;
   
   DivElement _listener;
   GraphvizNaClModule _module;
@@ -28,28 +28,22 @@ class GraphvizModule extends PolymerElement {//with Observable {
   }
   
   void _polymerReady() {
-    if (text == null) {
-      text = super.text;
+    if (dot == null) {
+      dot = text;
     }
     _listener = this.$['listener'] as DivElement;
     _module = new GraphvizNaClModule(_listener)
       ..width = width
       ..height = height
       ..component = this.shadowRoot;
-//    this.text = cluster;
   }
   
-  void attributeChanged(name, old, n) {
-    print('attr: $name');
-  }
-  
-  void textChanged(old, String newText) {
+  void dotChanged(old, String newText) {
     print('text: $old $newText');
     _module.dot(newText, layout: Layout.DOT).then((out) {
       print('out: ${out.output}');
       final doc = _parser.parseFromString(out.output, 'text/xml');
       final node = document.importNode(doc.documentElement, true);
-//      document.body.append(node);
       final output = this.$['output'] as Element;
       while (output.firstChild != null) {
         output.firstChild.remove();
@@ -57,32 +51,9 @@ class GraphvizModule extends PolymerElement {//with Observable {
       output.append(node);
     });
   }
+  
+  void set text(String t) {
+    dot = t;
+    super.text = t;
+  }
 }
-
-final cluster = '''digraph G {
-
-  subgraph cluster_0 {
-    style=filled;
-    color=lightgrey;
-    node [style=filled,color=white];
-    a0 -> a1 -> a2 -> a3;
-    label = "process #1";
-  }
-
-  subgraph cluster_1 {
-    node [style=filled];
-    b0 -> b1 -> b2 -> b3;
-    label = "process #2";
-    color=blue
-  }
-  start -> a0;
-  start -> b0;
-  a1 -> b3;
-  b2 -> a3;
-  a3 -> a0;
-  a3 -> end;
-  b3 -> end;
-
-  start [shape=Mdiamond];
-  end [shape=Msquare];
-}''';

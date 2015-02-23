@@ -5,7 +5,7 @@ import 'dart:async';
 import 'package:ppapi_common/nacl_module.dart';
 
 enum Render {
-  PS, SVG, VML, XDOT
+  DOT, FIG, MAP, PIC, POV, TK, PS, SVG, VML, XDOT
 }
 
 enum Layout {

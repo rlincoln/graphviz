@@ -1,0 +1,26 @@
+<link rel="import" href="../../../packages/polymer/polymer.html">
+
+<link rel="import" href="packages/paper_elements/paper_input.html">
+<link rel="import" href="packages/paper_elements/paper_button.html">
+<link rel="import" href="packages/paper_elements/paper_autogrow_textarea.html">
+<link rel="import" href="packages/paper_elements/paper_radio_group.html">
+<link rel="import" href="packages/paper_elements/paper_radio_button.html">
+    
+<polymer-element name="graphviz-editor">
+  <template>
+    <style>
+    </style>
+    <paper-autogrow-textarea rows="5">
+      <textarea value="{{dot}}"></textarea>
+    </paper-autogrow-textarea>
+    <br/>
+    <paper-radio-group id="layouts" selected="{{layoutType}}">
+      <paper-radio-button name="dot" label="dot"></paper-radio-button>
+      <paper-radio-button name="neato" label="neato"></paper-radio-button>
+      <paper-radio-button name="twopi" label="twopi"></paper-radio-button>
+    </paper-radio-group>
+    
+    <paper-button raised on-click="{{layout}}">Layout</paper-button>
+  </template>
+  <script type="application/dart" src="graphviz_editor.dart"></script>
+</polymer-element>

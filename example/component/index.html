@@ -3,21 +3,12 @@
   <head>
   	<meta charset="utf-8">
     <title>graphviz component</title>
-
-    <link rel="import" href="packages/paper_elements/paper_icon_button.html">
-
     <link rel="import" href="packages/graphviz/components/graphviz_module.html">
-    <!-- <link rel="import" href="../../lib/components/graphviz_module.html"> -->
-    
-    <!-- <link rel="import" href="packages/graphviz/graphviz_module.html"> --> 
+    <link rel="import" href="graphviz_editor.html">
   </head>
   <body unresolved>
-    <paper-icon-button icon="arrow-back"></paper-icon-button>
-    <!--
-  <graphviz-module text="digraph G {A -> B; A -> C;}"></graphviz-module>
-  -->
-
-    <graphviz-module>
+    <graphviz-editor module="module"></graphviz-editor>
+    <graphviz-module id="module">
       digraph G {
         A -> B;
         A -> C;
