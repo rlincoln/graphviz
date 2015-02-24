@@ -3,7 +3,7 @@
 library graphviz.zoom;
 
 import 'dart:svg';
-import 'dart:html' show Element;
+import 'dart:html' show Element, Event, MouseEvent;
 import 'dart:math' as math;
 import 'package:charted/charted.dart';
 
@@ -457,42 +457,43 @@ const d3_behavior_zoomInfinity = const [0, double.INFINITY]; // default scale ex
 var d3_behavior_zoomDelta, // initialized lazily
 d3_behavior_zoomWheel;
 
-d3_mousePoint(SvgElement container, Event e) {
+d3_mousePoint(Element container, MouseEvent e) {
 //  if (e.changedTouches) e = e.changedTouches[0];
-  SvgSvgElement svg;
-  if (container is SvgSvgElement) {
-    svg = container;
-  } else {
-    svg = container.ownerSvgElement;
-  }
-
-  Point point = svg.createSVGPoint();
-  /*if (d3_mouse_bug44083 < 0) {
-    var window = d3_window(container);
-    if (window.scrollX || window.scrollY) {
-      svg = d3.select("body").append("svg").style({
-      position: "absolute",
-      top: 0,
-      left: 0,
-      margin: 0,
-      padding: 0,
-      border: "none"
-      }, "important");
-      var ctm = svg[0][0].getScreenCTM();
-      d3_mouse_bug44083 = !(ctm.f || ctm.e);
-      svg.remove();
+  if (container is SvgElement) {
+    SvgSvgElement svg;
+    if (container is SvgSvgElement) {
+      svg = container;
+    } else {
+      svg = container.ownerSvgElement;
     }
-  }*/
-  /*if (d3_mouse_bug44083) {
-    point.x = e.pageX;
-    point.y = e.pageY;
-  } else {*/
-  point.x = e.clientX
-  point.y = e.clientY;
-  //}
-  point = point.matrixTransform(container.getScreenCTM().inverse());
-  return [point.x, point.y];
 
-  //var rect = container.getBoundingClientRect();
-  //return [e.clientX - rect.left - container.clientLeft, e.clientY - rect.top - container.clientTop];
-};
+    Point point = svg.createSvgPoint();
+    /*if (d3_mouse_bug44083 < 0) {
+      var window = d3_window(container);
+      if (window.scrollX || window.scrollY) {
+        svg = d3.select("body").append("svg").style({
+        position: "absolute",
+        top: 0,
+        left: 0,
+        margin: 0,
+        padding: 0,
+        border: "none"
+        }, "important");
+        var ctm = svg[0][0].getScreenCTM();
+        d3_mouse_bug44083 = !(ctm.f || ctm.e);
+        svg.remove();
+      }
+    }*/
+    /*if (d3_mouse_bug44083) {
+      point.x = e.pageX;
+      point.y = e.pageY;
+    } else {*/
+    point.x = e.client.x;//t.clientLeft;
+    point.y = e.client.y;
+    //}
+    point = point.matrixTransform(/*container*/svg.getScreenCtm().inverse());
+    return [point.x, point.y];
+  }
+  var rect = container.getBoundingClientRect();
+  return [e.client.x - rect.left - container.clientLeft, e.client.y - rect.top - container.clientTop];
+}

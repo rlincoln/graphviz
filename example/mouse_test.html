@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>HTML Mouse Test</title>
+<body>
+<script type="application/dart">
+import 'dart:html';
+import 'package:charted/charted.dart';
+import 'package:graphviz/zoom.dart';
+
+main() {
+  var body = new SelectionScope.selector("body");
+
+  var div = body.append("div")
+      ..style("width", "1000px")
+      ..style("height", "500px")
+      ..style("border", "solid black 1px")
+      ..style("cursor", "crosshair");
+
+  var span = body.append("span");
+
+  window.onMouseMove.listen((MouseEvent e) {
+    span.text(d3_mousePoint(div.first, e).toString());
+  });
+}
+</script>
