@@ -2,8 +2,9 @@
 // All rights reserved.
 library graphviz.zoom;
 
-import 'dart:svg';
-import 'dart:html' show Element, Event, MouseEvent;
+import 'dart:async';
+import 'dart:svg' hide ZoomEvent;
+import 'dart:html' show Element, Event, MouseEvent, window;
 import 'dart:math' as math;
 import 'package:charted/charted.dart';
 
@@ -22,29 +23,60 @@ class _View {
   _View({this.x, this.y, this.k});
 }
 
+class ZoomStartedEvent {
+}
+
+class ZoomEvent {
+  final num scale;
+  final List<num> translate;
+  ZoomEvent(this.scale, this.translate);
+}
+
+class ZoomEndEvent {
+}
+
 /// This behavior automatically creates event listeners to handle zooming
 /// and panning gestures on a container element. Both mouse and touch events
 /// are supported.
 class Zoom {
   _View view = new _View(x: 0, y: 0, k: 1);
-  var _translate0; // translate when we started zooming (to avoid drift)
-  List<num> _center0; // implicit desired position of translate0 after zooming
-  List<num> _center; // explicit desired position of translate0 after zooming
-  List<num> _size = [960, 500]; // viewport size; required for zoom interpolation
-  List<num> _scaleExtent = d3_behavior_zoomInfinity;
+
+  /// Translate when we started zooming (to avoid drift).
+  var _translate0;
+
+  /// Implicit desired position of translate0 after zooming.
+  List<num> _center0;
+
+  /// Explicit desired position of translate0 after zooming.
+  List<num> _center;
+
+  /// Viewport size; required for zoom interpolation.
+  List<num> _size = [960, 500];
+
+  List<num> _scaleExtent = _zoomInfinity;
+
   int duration = 250;
   bool _zooming = false;
-  String _mousedown = "mousedown.zoom";
-  String _mousemove = "mousemove.zoom";
-  String _mouseup = "mouseup.zoom";
+  String _mousedown = "mousedown";//.zoom";
+  String _mousemove = "mousemove";//.zoom";
+  String _mouseup = "mouseup";//.zoom";
   var _mousewheelTimer;
   String _touchstart = "touchstart.zoom";
   num _touchtime; // time of last touchstart (to detect double-tap)
 //      _event = d3_eventDispatch(zoom, "zoomstart", "zoom", "zoomend"),
-  Scale _x0;
-  Scale _x1;
-  Scale _y0;
-  Scale _y1;
+
+  /*Scale*/LinearScale _x0;
+  LinearScale _x1;
+  LinearScale _y0;
+  LinearScale _y1;
+
+  StreamController<ZoomStartedEvent> _zoomStartedController = new StreamController.broadcast();
+  StreamController<ZoomEvent> _zoomController = new StreamController.broadcast();
+  StreamController<ZoomEndEvent> _zoomEndedController = new StreamController.broadcast();
+
+  Stream<ZoomStartedEvent> get onZoomStart => _zoomStartedController.stream;
+  Stream<ZoomEvent> get onZoom => _zoomController.stream;
+  Stream<ZoomEndEvent> get onZoomEnd => _zoomEndedController.stream;
 
 //  Zoom() {
     // Lazily determine the DOM’s support for Wheel events.
@@ -78,9 +110,9 @@ class Zoom {
   /// a zoomstart event when the transition starts from the previously-set
   /// view, zoom events for each tick of the transition, and finally a
   /// zoomend event when the transition ends.
-  event(Selection g) {
+  /*event(Selection g) {
     g.each((dat, i, elem) {
-      var dispatch = event.of(this, arguments);
+      var dispatch = _event.of(this, arguments);
       _View view1 = view;
       if (d3_transitionInheritId) {
         d3.select(this).transition()
@@ -116,9 +148,9 @@ class Zoom {
         _zoomended(dispatch);
       }
     });
-  }
+  }*/
 
-  /// the current translation vector, which defaults to [0, 0].
+  /// The current translation vector, which defaults to [0, 0].
   List<num> get translate => [view.x, view.y];
 
   /// Specifies the current zoom translation vector.
@@ -143,7 +175,7 @@ class Zoom {
   /// [minimum, maximum].
   void set scaleExtent(List<num> x) {
     if (x == null) {
-      x = d3_behavior_zoomInfinity;
+      x = _zoomInfinity;
     }
     _scaleExtent = [x[0], x[1]];
   }
@@ -161,9 +193,8 @@ class Zoom {
   /// The current viewport size which defaults to [960, 500].
   List<num> get size => _size;
 
-  /// Sets the viewport size to the specified dimensions [width, height]
-  /// and returns this zoom behavior. A size is needed to support smooth
-  /// zooming during transitions.
+  /// Sets the viewport size to the specified dimensions [width, height].
+  /// A size is needed to support smooth zooming during transitions.
   void set size(List<num> s) {
     _size = s == null ? s : [s[0], s[1]];
   }
@@ -210,15 +241,18 @@ class Zoom {
   }
 
   void _scaleTo(num s) {
-    view.k = math.max(scaleExtent[0], math.min(scaleExtent[1], s));
+    view.k = math.max(_scaleExtent[0], math.min(_scaleExtent[1], s));
   }
 
   void _translateTo(List<num> p, List<num> l) {
+    l = _point(l);
+    //print('${p[0]-l[0]} ${p[1]-l[1]} ${view.x} ${view.y}');
+//    print('$p $l');
     view.x += p[0] - l[0];
     view.y += p[1] - l[1];
   }
 
-  void _zoomTo(that, List<num> p, List<num> l, num k) {
+  /*void _zoomTo(that, List<num> p, List<num> l, num k) {
     that.__chart__ = new _View(x: view.x, y: view.y, k: view.k);
 
     _scaleTo(math.pow(2, k));
@@ -229,92 +263,102 @@ class Zoom {
       that = that.transition().duration(duration);
     }
     that.call(zoom.event);
-  }
+  }*/
 
   _rescale() {
     if (_x1 != null) {
-      _x1.domain(_x0.range().map((x) {
+      _x1.domain = _x0.range.map((x) {
         return (x - view.x) / view.k;
-      }).map(_x0.invert));
+      }).map(_x0.invert).toList();
     }
     if (_y1 != null) {
-      _y1.domain(_y0.range().map((y) {
+      _y1.domain = _y0.range.map((y) {
         return (y - view.y) / view.k;
-      }).map(_y0.invert));
+      }).map(_y0.invert).toList();
     }
   }
 
-  void _zoomstarted(dispatch) {
+  void _zoomstarted(/*dispatch*/) {
     if (!_zooming) {
       _zooming = true;
-      if (dispatch != null) {
+      /*if (dispatch != null) {
         dispatch({
             'type': "zoomstart"
         });
-      }
+      }*/
+      _zoomStartedController.add(new ZoomStartedEvent());
     }
   }
 
-  void _zoomed(dispatch) {
+  void _zoomed(/*dispatch*/) {
     _rescale();
-    if (dispatch != null) {
+    /*if (dispatch != null) {
       dispatch({
           'type': "zoom", 'scale': view.k, 'translate': [view.x, view.y]
       });
-    }
+    }*/
+    _zoomController.add(new ZoomEvent(view.k, [view.x, view.y]));
   }
 
-  _zoomended(dispatch) {
+  _zoomended(/*dispatch*/) {
     if (_zooming) {
       _zooming = false;
-      if (dispatch != null) {
+      /*if (dispatch != null) {
         dispatch({
             'type': "zoomend"
         });
-      }
+      }*/
+      _zoomEndedController.add(new ZoomEndEvent());
     }
     _center0 = null;
   }
 
   void _mousedowned(dat, i, Element elem) {
-    final event = _scope.event;
+    //final event = _scope.event;
 //    var that = this,
-    var target = event.target;
-    var dispatch = null;//event.of(that, arguments),
-    bool dragged = false;
-    final subject = new SelectionScope
-      .element(elem.ownerDocument.documentElement)
-      .selectAll('*');
+    //var target = event.target;
+//    var dispatch = null;//event.of(that, arguments),
+//    bool dragged = false;
+//    final subject = new SelectionScope
+//      .element(elem.ownerDocument.documentElement)
+//      .selectAll('*');
+    StreamSubscription<MouseEvent> move, mouseUp;
 //        subject = d3.select(d3_window(that)),
-    var location0 = _location(d3_mousePoint(elem, event));
+    var location0 = _location(mousePoint(elem, _scope.event));
 //        dragRestore = d3_event_dragSuppress(that);
 //
 //    d3_selection_interrupt.call(that);
-//    _zoomstarted(dispatch);
+    _zoomstarted(/*dispatch*/);
 
-    moved(dat, i, el) {
-      dragged = true;
-      _translateTo(d3_mousePoint(elem, event), location0);
-      _zoomed(dispatch);
+    moved(MouseEvent e/*dat, i, el*/) {
+      //dragged = true;
+      _translateTo(mousePoint(elem, e), location0);
+      _zoomed(/*dispatch*/);
     }
 
-    ended(dat, i, el) {
-      subject
-        ..on(_mousemove, null)
-        ..on(_mouseup, null);
+    ended(MouseEvent e/*dat, i, el*/) {
+//      subject
+//        ..on(_mousemove, null)
+//        ..on(_mouseup, null);
+      move.cancel();
+      mouseUp.cancel();
 //      dragRestore(dragged && event.target == target);
-      _zoomended(dispatch);
+      _zoomended(/*dispatch*/);
     }
 
-    subject
-      ..on(_mousemove, moved)
-      ..on(_mouseup, ended);
+//    subject
+//      ..on(_mousemove, moved)
+//      ..on(_mouseup, ended);
+    if (move != null) move.cancel();
+    if (mouseUp != null) mouseUp.cancel();
+    move = window.onMouseMove.listen(moved);
+    mouseUp = window.onMouseUp.listen(ended);
   }
-
+/*
   // These closures persist for as long as at least one touch is active.
   void _touchstarted(dat, i, elem) {
     var that = this,
-        dispatch = event.of(that, arguments),
+        dispatch = _event.of(that, arguments),
         locations0 = {}, // touchstart locations
         distance0 = 0, // distance² between initial touches
         scale0, // scale when we started touching
@@ -427,7 +471,7 @@ class Zoom {
   }
 
   void _mousewheeled(dat, i, elem) {
-    var dispatch = event.of(this, arguments);
+    var dispatch = _event.of(this, arguments);
     if (_mousewheelTimer != null) {
       clearTimeout(mousewheelTimer);
     } else {
@@ -442,22 +486,27 @@ class Zoom {
     _translateTo(_center0, _translate0);
     _zoomed(dispatch);
   }
-
-  void _dblclicked(dat, i, elem) {
-    var p = d3.mouse(this),
+*/
+  /*void _dblclicked(dat, i, elem) {
+    var p = mousePoint(this, _scope.event),
         k = math.log(view.k) / math.LN2;
 
-    _zoomTo(this, p, _location(p), d3.event.shiftKey ? k.ceil() - 1 : k.floor() + 1);
-  }
+    bool shiftKey = false;//_scope.event.shiftKey
+    _zoomTo(this, p, _location(p), shiftKey ? k.ceil() - 1 : k.floor() + 1);
+  }*/
 
-//  return d3.rebind(zoom, event, "on");
+//  return d3.rebind(zoom, _event, "on");
 }
 
-const d3_behavior_zoomInfinity = const [0, double.INFINITY]; // default scale extent
-var d3_behavior_zoomDelta, // initialized lazily
-d3_behavior_zoomWheel;
+const _zoomInfinity = const [0, double.INFINITY]; // default scale extent
+//var d3_behavior_zoomDelta, // initialized lazily
+//d3_behavior_zoomWheel;
 
-d3_mousePoint(Element container, MouseEvent e) {
+/// Returns the x and y coordinates of the [event], relative to the specified
+/// [container]. The container may be an HTML or SVG container element, such
+/// as an `svg:g` or `svg:svg`. The coordinates are returned as a two-element
+/// array [x, y].
+List<num> mousePoint(Element container, MouseEvent event) {
 //  if (e.changedTouches) e = e.changedTouches[0];
   if (container is SvgElement) {
     SvgSvgElement svg;
@@ -488,12 +537,15 @@ d3_mousePoint(Element container, MouseEvent e) {
       point.x = e.pageX;
       point.y = e.pageY;
     } else {*/
-    point.x = e.client.x;//t.clientLeft;
-    point.y = e.client.y;
+    point.x = event.client.x;//t.clientLeft;
+    point.y = event.client.y;
     //}
     point = point.matrixTransform(/*container*/svg.getScreenCtm().inverse());
     return [point.x, point.y];
   }
   var rect = container.getBoundingClientRect();
-  return [e.client.x - rect.left - container.clientLeft, e.client.y - rect.top - container.clientTop];
+  return [
+    event.client.x - rect.left - container.clientLeft,
+    event.client.y - rect.top - container.clientTop
+  ];
 }

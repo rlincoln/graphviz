@@ -8,12 +8,12 @@ main() {
       height = 500 - margin['top'] - margin['bottom'];
 
   var x = new LinearScale()
-      ..domain([-width / 2, width / 2])
-      ..range([0, width]);
+      ..domain = [-width / 2, width / 2]
+      ..range = [0, width];
 
   var y = new LinearScale()
-      ..domain([-height / 2, height / 2])
-      ..range([height, 0]);
+      ..domain = [-height / 2, height / 2]
+      ..range = [height, 0];
 
   var xAxis = new SvgAxis()
       ..scale = x
@@ -23,51 +23,54 @@ main() {
   var yAxis = new SvgAxis()
       ..scale = y
       ..orientation = "left"
-//      ..ticks = 5
-      ..outerTickSize = -width;
+      ..suggestedTickCount = 5
+      ..innerTickSize = -width;
 
-  var zoom = new Zoom()
+  var svg = new SelectionScope.selector("body")
+    .append("svg:svg")
+      ..attr("width", width + margin['left'] + margin['right'])
+      ..attr("height", height + margin['top'] + margin['bottom']);
+  var g = svg.append("g")
+      ..attr("transform", "translate(${margin['left']},${margin['top']})");
+//      ..call(zoom);
+
+  var zoom = new Zoom(g)
       ..x = x
       ..y = y
       ..scaleExtent = [1, 10];
 
-  var svgsvg = new SelectionScope.selector("body")
-    .append("svg")
-      ..attr("width", width + margin['left'] + margin['right'])
-      ..attr("height", height + margin['top'] + margin['bottom']);
-  var svg = svgsvg.append("g")
-      ..attr("transform", "translate(${margin['left']},${margin['top']})")
-      ..call(zoom);
-
-  svg.append("rect")
+  g.append("rect")
       ..attr("width", width)
       ..attr("height", height);
 
-  svg.append("g")
+  xAxis.axis(g.append("g")
       ..attr("class", "x axis")
-      ..attr("transform", "translate(0,$height)")
-      ..call(xAxis);
+      ..attr("transform", "translate(0,$height)"));
+//      ..call(xAxis);
 
-  svg.append("g")
-      ..attr("class", "y axis")
-      ..call(yAxis);
+  yAxis.axis(g.append("g")
+      ..attr("class", "y axis"));
+//      ..call(yAxis);
 
-  zoomed() {
-    svg.select(".x.axis").call(xAxis);
-    svg.select(".y.axis").call(yAxis);
+  zoomed([_]) {
+//    g.select(".x.axis").call(xAxis);
+//    g.select(".y.axis").call(yAxis);
+    xAxis.axis(g.select(".x.axis"));
+    yAxis.axis(g.select(".y.axis"));
   }
 
-  zoom.on("zoom", zoomed);
+//  zoom.on("zoom", zoomed);
+  zoom.onZoom.listen(zoomed);
 
   reset(_) {
-    new Transition(svg)
+    new Transition(g)
       ..duration(750)
-      ..attrTween("zoom", (d, ei, attr) {
+      ..attrTween("zoom", (d, ei, String attr) {
       var ix = interpolateList(x.domain, [-width / 2, width / 2]),
           iy = interpolateList(y.domain, [-height / 2, height / 2]);
-      return (t) {
-        zoom.x = x.domain(ix(t));
-        zoom.y = y.domain(iy(t));
+      return (num t) {
+        zoom.x = (x..domain = ix(t));
+        zoom.y = (y..domain = iy(t));
         zoomed();
       };
     });
