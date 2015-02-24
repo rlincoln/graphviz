@@ -4,3 +4,7 @@
 /packages/*
 /example/packages
 /example/component/packages
+/example/zoom/packages
+
+.idea/*
+graphviz.iml
