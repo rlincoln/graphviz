@@ -1,8 +1,10 @@
 library graphviz.graphs;
 
 final simple = '''digraph G {
+  node [style=filled,fillcolor=white];
+  A [id=a];
   A -> B;
-  A -> C;
+  A -> C [id=ac];
 }''';
 
 final cluster = '''digraph G {

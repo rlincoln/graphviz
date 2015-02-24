@@ -3,6 +3,14 @@
   <head>
   	<meta charset="utf-8">
     <title>dot</title>
+    <style>
+.node {
+  cursor: pointer;
+}
+.edge {
+  cursor: pointer;
+}
+    </style>
   </head>
   <body>
     <form>
@@ -17,7 +25,7 @@
         <option value="circo">circo</option>
         <option value="fdp">fdp</option>
       </select>
-      <input type="submit" value="Layout" id="layout">
+      <input type="submit" value="Layout" id="layout" autofocus>
     </form>
 
     <pre><code id="code"></code></pre>
