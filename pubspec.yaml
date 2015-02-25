@@ -13,6 +13,7 @@ dependencies:
   polymer: '>=0.15.5 <0.16.0'
   ppapi_common:
     path: ../ppapi_common
+  rate_limit: '>=0.1.0 <0.2.0'
 dev_dependencies:
   unittest: '>=0.11.0+3 <0.12.0'
 transformers:

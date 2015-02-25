@@ -7,6 +7,7 @@ import 'dart:svg' hide ZoomEvent;
 import 'dart:html' show Element, Event, MouseEvent, window;
 import 'dart:math' as math;
 import 'package:charted/charted.dart';
+import 'package:rate_limit/rate_limit.dart';
 
 //import "../core/document";
 //import "../core/rebind";
@@ -17,6 +18,8 @@ import 'package:charted/charted.dart';
 //import "../selection/selection";
 //import "../interpolate/zoom";
 //import "behavior";
+
+final _chartProp = new Expando<_View>('chart');
 
 class _View {
   num x, y, k;
@@ -95,7 +98,8 @@ class Zoom {
   Zoom(Selection g) {
     _scope = g.scope;
 
-    g ..on(_mousedown, _mousedowned);
+    g ..on(_mousedown, _mousedowned)
+      ..on("dblclick", _dblclicked);
 //      ..on(d3_behavior_zoomWheel + ".zoom", _mousewheeled)
 //      ..on("dblclick.zoom", _dblclicked)
 //      ..on(_touchstart, _touchstarted);
@@ -110,11 +114,11 @@ class Zoom {
   /// a zoomstart event when the transition starts from the previously-set
   /// view, zoom events for each tick of the transition, and finally a
   /// zoomend event when the transition ends.
-  /*event(Selection g) {
+  event(Selection g) {
     g.each((dat, i, elem) {
-      var dispatch = _event.of(this, arguments);
+//      var dispatch = _event.of(this, arguments);
       _View view1 = view;
-      if (d3_transitionInheritId) {
+      /*if (d3_transitionInheritId) {
         d3.select(this).transition()
             .each("start.zoom", () {
               view = this.__chart__ || new _View(x: 0, y: 0, k: 1); // pre-transition state
@@ -141,14 +145,14 @@ class Zoom {
             .each("end.zoom", () {
               _zoomended(dispatch);
             });
-      } else {
-        this.__chart__ = view;
-        _zoomstarted(dispatch);
-        _zoomed(dispatch);
-        _zoomended(dispatch);
-      }
+      } else {*/
+        _chartProp[elem] = view;
+        _zoomstarted(/*dispatch*/);
+        _zoomed(/*dispatch*/);
+        _zoomended(/*dispatch*/);
+      //}
     });
-  }*/
+  }
 
   /// The current translation vector, which defaults to [0, 0].
   List<num> get translate => [view.x, view.y];
@@ -246,24 +250,23 @@ class Zoom {
 
   void _translateTo(List<num> p, List<num> l) {
     l = _point(l);
-    //print('${p[0]-l[0]} ${p[1]-l[1]} ${view.x} ${view.y}');
-//    print('$p $l');
     view.x += p[0] - l[0];
     view.y += p[1] - l[1];
   }
 
-  /*void _zoomTo(that, List<num> p, List<num> l, num k) {
-    that.__chart__ = new _View(x: view.x, y: view.y, k: view.k);
+  void _zoomTo(Element elem, List<num> p, List<num> l, num k) {
+    _chartProp[elem] = new _View(x: view.x, y: view.y, k: view.k);
 
     _scaleTo(math.pow(2, k));
     _translateTo(_center0 = p, l);
 
-    that = d3.select(that);
-    if (duration > 0) {
-      that = that.transition().duration(duration);
-    }
-    that.call(zoom.event);
-  }*/
+    //elem = d3.select(elem);
+    var s = new SelectionScope.element(elem.parent).selectElements([elem]);
+//    if (duration > 0) {
+//      s = s.transition()..duration(duration);
+//    }
+    event(s);
+  }
 
   _rescale() {
     if (_x1 != null) {
@@ -351,6 +354,7 @@ class Zoom {
 //      ..on(_mouseup, ended);
     if (move != null) move.cancel();
     if (mouseUp != null) mouseUp.cancel();
+//    move = window.onMouseMove.transform(new Throttler(const Duration(milliseconds: 100))).listen(moved);
     move = window.onMouseMove.listen(moved);
     mouseUp = window.onMouseUp.listen(ended);
   }
@@ -487,13 +491,13 @@ class Zoom {
     _zoomed(dispatch);
   }
 */
-  /*void _dblclicked(dat, i, elem) {
-    var p = mousePoint(this, _scope.event),
+  void _dblclicked(dat, i, Element elem) {
+    var p = mousePoint(elem, _scope.event),
         k = math.log(view.k) / math.LN2;
 
-    bool shiftKey = false;//_scope.event.shiftKey
-    _zoomTo(this, p, _location(p), shiftKey ? k.ceil() - 1 : k.floor() + 1);
-  }*/
+    bool shiftKey = (_scope.event as MouseEvent).shiftKey;
+    _zoomTo(elem, p, _location(p), shiftKey ? k.ceil() - 1 : k.floor() + 1);
+  }
 
 //  return d3.rebind(zoom, _event, "on");
 }
